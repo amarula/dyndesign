@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple, Type
+from typing import Callable, Tuple, Type
 
 
 class ClassMerger:
@@ -29,7 +29,7 @@ class ClassMerger:
 
 
     @classmethod
-    def merge_classes(cls, base_class: Type, extension_classes: List[Type]) -> Type:
+    def merge(cls, base_class: Type, *extension_classes: Type) -> Type:
         """Merge (i.e., extend) a base class with one or more extension classes. If more than one adapter classes are
         provided, then the classes are extended in sequence (from the first one to the last).
 
@@ -37,10 +37,10 @@ class ClassMerger:
         :param extension_classes: extension classes.
         :return: merged class.
         """
-        result_classes = tuple(extension_classes + [base_class])
+        result_classes = (base_class,) + extension_classes
         init_all_classes = cls.__merge_class_inits(result_classes)
         return type(
             base_class.__name__,
-            result_classes,
+            result_classes[::-1],
             {"__init__": init_all_classes}
         )
