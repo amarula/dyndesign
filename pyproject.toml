@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "desdyn"
+name = "dyndee"
 version = "0.1.0"
 description = ""
 authors = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
