@@ -1,5 +1,6 @@
 from dyndee.class_merger import ClassMerger
-from .sample_classes import Results, A, B, B_child, C_child, D, E, F
+from .testing_results import ClassMergeResults as cmr
+from .sample_classes import *
 
 
 def test_simple_merge():
@@ -9,11 +10,11 @@ def test_simple_merge():
     """
     merged_class = ClassMerger.merge(A, B)
     merged_object = merged_class()
-    assert merged_object.a1 == Results.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == Results.CLASS_A__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == Results.CLASS_A__M2, "Error initializing attribute `a3`"
-    assert merged_object.m1() == Results.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == Results.CLASS_A__M2, "Error calling method `m2`"
+    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_A__A2, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_A__M2, "Error initializing attribute `a3`"
+    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_object.m2() == cmr.CLASS_A__M2, "Error calling method `m2`"
 
 
 def test_multi_merge():
@@ -25,11 +26,11 @@ def test_multi_merge():
     """
     merged_class = ClassMerger.merge(A, B_child, C_child)
     merged_object = merged_class()
-    assert merged_object.a1 == Results.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == Results.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == Results.CLASS_B_CHILD__M3, "Error initializing attribute `a3`"
-    assert merged_object.m1() == Results.CLASS_C__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == Results.CLASS_C_CHILD__M2, "Error calling method `m2`"
+    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_B_CHILD__M3, "Error initializing attribute `a3`"
+    assert merged_object.m1() == cmr.CLASS_C__M1, "Error overloading method `m1`"
+    assert merged_object.m2() == cmr.CLASS_C_CHILD__M2, "Error calling method `m2`"
 
 
 def test_merge_lambda_methods():
@@ -38,11 +39,11 @@ def test_merge_lambda_methods():
     """
     merged_class = ClassMerger.merge(D, C_child, B)
     merged_object = merged_class()
-    assert merged_object.a1 == Results.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == Results.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == Results.CLASS_D__M2, "Error initializing attribute `a3`"
-    assert merged_object.m1() == Results.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == Results.CLASS_D__M2, "Error calling method `m2`"
+    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_D__M2, "Error initializing attribute `a3`"
+    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_object.m2() == cmr.CLASS_D__M2, "Error calling method `m2`"
 
 
 def test_merge_with_multi_init_params_1():
@@ -50,12 +51,12 @@ def test_merge_with_multi_init_params_1():
     class `B`.
     """
     merged_class = ClassMerger.merge(E, B)
-    merged_object = merged_class(Results.CLASS_E__P1, Results.CLASS_E__P2)
-    assert merged_object.a1 == Results.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == Results.CLASS_E__P2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == Results.CLASS_E__P1, "Error initializing attribute `a3`"
-    assert merged_object.m1() == Results.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == Results.CLASS_E__P1, "Error calling method `m2`"
+    merged_object = merged_class(cmr.CLASS_E__P1, cmr.CLASS_E__P2)
+    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_E__P1, "Error initializing attribute `a3`"
+    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_object.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
 
 
 def test_merge_with_multi_init_params_2():
@@ -63,7 +64,7 @@ def test_merge_with_multi_init_params_2():
     passed to constructor of classes `E` only.
     """
     merged_class = ClassMerger.merge(E, F)
-    merged_object = merged_class(Results.CLASS_F__P1, Results.CLASS_E__P2)
-    assert merged_object.a1 == Results.CLASS_F__P1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == Results.CLASS_F__P1, "Error initializing attribute `a2`"
-    assert merged_object.m2() == Results.CLASS_F__M2, "Error calling method `m2`"
+    merged_object = merged_class(cmr.CLASS_F__P1, cmr.CLASS_E__P2)
+    assert merged_object.a1 == cmr.CLASS_F__P1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_F__P1, "Error initializing attribute `a2`"
+    assert merged_object.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
