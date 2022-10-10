@@ -16,6 +16,8 @@ class Results(IntEnum):
     CLASS_D__M2 = auto()
     CLASS_E__P1 = auto()
     CLASS_E__P2 = auto()
+    CLASS_F__P1 = auto()
+    CLASS_F__M2 = auto()
 
 
 class A:
@@ -78,3 +80,11 @@ class E:
 
     def m2(self):
         return self.param_1
+
+
+class F:
+    def __init__(self, param_1):
+        self.a2 = param_1
+
+    def m2(self):
+        return Results.CLASS_F__M2

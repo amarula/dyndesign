@@ -1,5 +1,5 @@
 from dyndee.class_merger import ClassMerger
-from .sample_classes import Results, A, B, B_child, C_child, D, E
+from .sample_classes import Results, A, B, B_child, C_child, D, E, F
 
 
 def test_simple_merge():
@@ -45,8 +45,9 @@ def test_merge_lambda_methods():
     assert merged_object.m2() == Results.CLASS_D__M2, "Error calling method `m2`"
 
 
-def test_merge_with_init_params():
-    """Two initializing parameters are passed to constructor of class `E`.
+def test_merge_with_multi_init_params_1():
+    """Two initializing parameters are passed to constructor of class `E`, and no parameter is passed to constructor of
+    class `B`.
     """
     merged_class = ClassMerger.merge(E, B)
     merged_object = merged_class(Results.CLASS_E__P1, Results.CLASS_E__P2)
@@ -55,3 +56,14 @@ def test_merge_with_init_params():
     assert merged_object.a3 == Results.CLASS_E__P1, "Error initializing attribute `a3`"
     assert merged_object.m1() == Results.CLASS_B__M1, "Error overloading method `m1`"
     assert merged_object.m2() == Results.CLASS_E__P1, "Error calling method `m2`"
+
+
+def test_merge_with_multi_init_params_2():
+    """First initializing parameter is passed to both constructors of classes `E` and `F`, and second parameter is
+    passed to constructor of classes `E` only.
+    """
+    merged_class = ClassMerger.merge(E, F)
+    merged_object = merged_class(Results.CLASS_F__P1, Results.CLASS_E__P2)
+    assert merged_object.a1 == Results.CLASS_F__P1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == Results.CLASS_F__P1, "Error initializing attribute `a2`"
+    assert merged_object.m2() == Results.CLASS_F__M2, "Error calling method `m2`"
