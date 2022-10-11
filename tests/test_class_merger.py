@@ -34,8 +34,8 @@ def test_multi_merge():
 
 
 def test_merge_lambda_methods():
-    """Class merging works also with method assigned or created dynamically. In class `D`, method `m3` is defined as an
-    alias of `m1`, and `m2` is defined as lambda function.
+    """This test case shows that class merging works also with method assigned or created dynamically. In class `D`,
+    method `m3` is defined as an alias of `m1`, and `m2` is defined as lambda function.
     """
     merged_class = ClassMerger.merge(D, C_child, B)
     merged_object = merged_class()
@@ -46,9 +46,10 @@ def test_merge_lambda_methods():
     assert merged_object.m2() == cmr.CLASS_D__M2, "Error calling method `m2`"
 
 
-def test_merge_with_multi_init_params_1():
-    """Two initializing parameters are passed to constructor of class `E`, and no parameter is passed to constructor of
-    class `B`.
+def test_merge_with_multi_init_args_1():
+    """This test case shows how the initializing arguments are passed to the constructors of the component classes. In
+    this case, both the initializing arguments are passed to constructor of class `E`, while constructor of class `B`
+    is initialized with no arguments, according to its signature.
     """
     merged_class = ClassMerger.merge(E, B)
     merged_object = merged_class(cmr.CLASS_E__P1, cmr.CLASS_E__P2)
@@ -59,12 +60,50 @@ def test_merge_with_multi_init_params_1():
     assert merged_object.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
 
 
-def test_merge_with_multi_init_params_2():
-    """First initializing parameter is passed to both constructors of classes `E` and `F`, and second parameter is
-    passed to constructor of classes `E` only.
-    """
+def test_merge_with_multi_init_args_2():
+    """Constructor of class `E` accepts both the initializing arguments, while constructor of class `F` accepts the
+    first argument only, according to its signature."""
     merged_class = ClassMerger.merge(E, F)
     merged_object = merged_class(cmr.CLASS_F__P1, cmr.CLASS_E__P2)
     assert merged_object.a1 == cmr.CLASS_F__P1, "Error initializing attribute `a1`"
     assert merged_object.a2 == cmr.CLASS_F__P1, "Error initializing attribute `a2`"
     assert merged_object.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
+
+
+def test_merge_with_kw_only_args():
+    """Constructor of class `E` accepts the arguments `param_1` and `param_2` as regular arguments, while constructor
+    of class `G` accepts `param_1` as positional-only argument, `option` as regular argument and `kwonly` as
+    keyword-only argument.
+    """
+    merged_class = ClassMerger.merge(E, G)
+    merged_object = merged_class(
+        param_1=cmr.CLASS_E__P1,
+        param_2=cmr.CLASS_E__P2,
+        option=cmr.CLASS_G__O1,
+        kwonly=cmr.CLASS_G__K1
+    )
+    assert merged_object.a1 == cmr.CLASS_G__O1, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_E__P1, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_G__K1, "Error initializing attribute `a3`"
+    assert merged_object.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
+
+
+def test_merge_merged_class():
+    """This test case shows how merged class `merged_class` of test case `test_merge_with_kw_only_args` can be merged
+    in turn with class `H`. Constructor of class `H` accepts `param_2` as positional-only argument, `option_2` as
+    regular argument and `kwonly_2` as keyword-only argument.
+    """
+    merged_class = ClassMerger.merge(E, G)
+    merged_class_2 = ClassMerger.merge(merged_class, H)
+    merged_object = merged_class_2(
+        param_1=cmr.CLASS_E__P1,
+        param_2=cmr.CLASS_E__P2,
+        option=cmr.CLASS_G__O1,
+        kwonly=cmr.CLASS_G__K1,
+        option_2=cmr.CLASS_H__O2,
+        kwonly_2=cmr.CLASS_H__K2
+    )
+    assert merged_object.a1 == cmr.CLASS_H__O2, "Error initializing attribute `a1`"
+    assert merged_object.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
+    assert merged_object.a3 == cmr.CLASS_H__K2, "Error initializing attribute `a3`"
+    assert merged_object.m2() == cmr.CLASS_H__M2, "Error calling method `m2`"

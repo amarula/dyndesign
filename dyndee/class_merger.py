@@ -1,4 +1,7 @@
-from typing import Any, Callable, Tuple, Type
+"""ClassMerger v. 1.0.04 """
+
+from typing import Callable, Dict, List, Tuple, Type
+from collections import deque
 import inspect
 
 
@@ -6,21 +9,40 @@ class ClassInitMerger:
     """Merge a constructor of base class with the constructor(s) of the extension class(es)."""
 
     @staticmethod
-    def __adapt_args(func: Callable, *args: Any) -> Tuple:
-        """Return the first N input arguments based on the number of arguments accepted by an input function.
+    def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
+        """Filter `args` and `kwargs` based and the arguments accepted by an input function.
 
         :param func: input function.
         :param args: input arguments.
-        :return: first N input arguments.
+        :param kwargs: input keyword arguments.
+        :return: filtered arguments and keyword arguments.
         """
         init_specs = inspect.getfullargspec(func)
-        len_args = len(init_specs[0]) -1
-        return args[:len_args]
+        if init_specs.varargs:
+            res_args = list(args)
+        else:
+            func_args = init_specs.args[1:]
+            arg_deque = deque(args)
+            res_args = []
+            for func_arg in func_args:
+                if func_arg in kwargs:
+                    res_args.append(kwargs[func_arg])
+                    del kwargs[func_arg]
+                elif arg_deque:
+                    res_args.append(arg_deque.popleft())
+
+        func_kwargs = init_specs.kwonlydefaults or {}
+        if init_specs.varkw:
+            res_kwargs = kwargs
+        else:
+            res_kwargs = {key: value for key, value in kwargs.items() if key in func_kwargs}
+
+        return res_args, res_kwargs
 
 
     @classmethod
     def merge_class_inits(cls, classes: Tuple[Type, ...]) -> Callable:
-        """Build an merged constructor by calling the constructors of the merged classes.
+        """Build a merged constructor by calling the constructors of the merged classes.
 
         :param classes: merged classes.
         :return: merged constructor.
@@ -32,8 +54,9 @@ class ClassInitMerger:
 
         def init_all_classes(obj, *args, **kwargs):
             for class_constructor in class_constructors:
-                filtered_args = cls.__adapt_args(class_constructor, *args)
-                class_constructor(obj, *filtered_args, **kwargs)
+                if not inspect.ismethoddescriptor(class_constructor):
+                    filtered_args, filtered_kwargs = cls.__adapt_arguments(class_constructor, *args, **kwargs)
+                    class_constructor(obj, *filtered_args, **filtered_kwargs)
 
         return init_all_classes
 

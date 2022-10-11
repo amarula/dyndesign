@@ -17,7 +17,7 @@ class A:
 class B:
     def __init__(self):
         self.a1 = cmr.CLASS_B__A1
-        self.a3 = self.m2()
+        self.a3 = self.m2()  # type: ignore
 
     def m1(self):
         return cmr.CLASS_B__M1
@@ -33,7 +33,7 @@ class B_child(B):
 
 class C:
     def __init__(self):
-        self.a3 = self.m3()
+        self.a3 = self.m3()  # type: ignore
 
     def m1(self):
         return cmr.CLASS_C__M1
@@ -50,7 +50,7 @@ class C_child(C):
 
 class D:
     def __init__(self):
-        self.m3 = self.m1
+        self.m3 = self.m1  # type: ignore
         self.m2 = lambda: cmr.CLASS_D__M2
 
 
@@ -69,3 +69,21 @@ class F:
 
     def m2(self):
         return cmr.CLASS_F__M2
+
+
+class G:
+    def __init__(self, param_1, /, option=None, *, kwonly=None):
+        self.a1 = option
+        self.a2 = param_1
+        self.a3 = kwonly
+
+
+class H:
+    def __init__(self, param_2, /, option_2=None, *, kwonly_2=None):
+        self.a1 = option_2
+        self.a2 = param_2
+        self.a3 = kwonly_2
+
+
+    def m2(self):
+        return cmr.CLASS_H__M2

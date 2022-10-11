@@ -19,3 +19,8 @@ class ClassMergeResults(IntEnum):
     CLASS_E__P2 = auto()
     CLASS_F__P1 = auto()
     CLASS_F__M2 = auto()
+    CLASS_G__O1 = auto()
+    CLASS_G__K1 = auto()
+    CLASS_H__O2 = auto()
+    CLASS_H__K2 = auto()
+    CLASS_H__M2 = auto()
