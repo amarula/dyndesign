@@ -1,17 +1,19 @@
 from typing import Type
 
+from utils.string import StringUtils
+
 
 class DynLoader:
-    """Toolset for dynamic loading."""
+    """Toolset for class dynamic loading."""
 
     @staticmethod
-    def load_class(module_name: str, class_name: str = None) -> Type:
-        """Dynamically load a class from a python module.
+    def import_class(module_name: str, class_name: str = '') -> Type:
+        """Dynamically import a class from a python module.
 
         :param module_name: name of the module to import.
-        :param class_name: name of the class in the module to import.
-        :return: imported class.
+        :param class_name: name of the class in the module to import, if different from the module's name.
+        :return: dynamically imported class.
         """
-        if not class_name: class_name = module_name
+        if not class_name: class_name = StringUtils.get_last_dot_chunk(module_name)
         loaded_module = __import__(module_name, fromlist=class_name)
         return getattr(loaded_module, class_name)
