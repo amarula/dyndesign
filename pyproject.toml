@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.9"
 
 
+[tool.poetry.group.dev.dependencies]
+mypy = "^0.982"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
