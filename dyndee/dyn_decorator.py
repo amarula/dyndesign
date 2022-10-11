@@ -2,7 +2,7 @@ from operator import attrgetter
 from typing import Any, Callable, List
 
 
-class DynamicDecorator:
+class DynDecorator:
     """Use methods added dynamically as decorators."""
 
     @staticmethod
