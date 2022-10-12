@@ -1,55 +1,43 @@
-"""DynDecorator v. 1.0.04 """
+"""DynDecorator v. 1.0.05 """
 
 from operator import attrgetter
 from typing import Any, Callable, List
 
 
+class ErrorMethodNotFound(Exception):
+    """Raised when a dynamic method cannot be found."""
+
+
 class DynDecorator:
-    """Use methods added dynamically as decorators."""
+    """Invoke methods dynamically added to a class."""
 
     @staticmethod
-    def __decorate_with_method_in_instance(
+    def __is_sub_object(method_name: str):
+        return '.' in method_name
+
+
+    @classmethod
+    def __try_invoke_method(cls,
         method_name: str,
         instance: object,
-        func: Callable,
         *args,
         **kwargs
     ) -> Any:
-        """Decorate function `func` with method `method_name` if `method_name` is in the namespace of `instance`,
-        otherwise call `func`.
+        """Attempt to invoke a method of a class instance.
 
-        :param method_name: method name of the method to use as decorator.
-        :param instance: class instance that may optionally include method `method_name`.
-        :param func: function to decorate.
-        :return: return value of `func`, if any.
-        """
-        if hasattr(instance, method_name):
-            return getattr(instance, method_name).__call__(func, *args, **kwargs)
-        else:
-            return func(instance, *args, **kwargs)
-
-
-    @staticmethod
-    def __decorate_with_method_in_sub_instance(
-        method_name: str,
-        instance: object,
-        func: Callable,
-        *args,
-        **kwargs
-    ) -> Any:
-        """Decorate function `func` with method `method_name`, wherein `method_name` is the path to a method in the
-        namespace of a sub-instance of `instance`. If such a method is not found, then call `func`.
-
-        :param method_name: path (in dot notation) to a method to use as decorator.
-        :param instance: class instance that may optionally include the method referenced with the path `method_name`.
-        :param func: function to decorate.
-        :return: return value of `func`, if any.
+        :param method_name: name of a method of the class instance or path (in dot notation) to a method of a
+                            sub-instance.
+        :param instance: class instance that may optionally include the method referenced to with `method_name`.
+        :return: value returned by the method, if such a method exists.
         """
         try:
-            method = attrgetter(method_name)(instance)
+            if cls.__is_sub_object(method_name):
+                method = attrgetter(method_name)(instance) 
+            else:
+                method = getattr(instance, method_name)
         except AttributeError:
-            return func(instance, *args, **kwargs)
-        return method.__call__(func, decorated_self=instance, *args, **kwargs)
+            raise ErrorMethodNotFound
+        return method.__call__(*args, **kwargs)
 
 
     @classmethod
@@ -58,7 +46,7 @@ class DynDecorator:
         method_sub_instance: str = ''
     ) -> Callable:
         """Meta decorator to decorate a function with one or more decorator methods. Decorator methods can be, for
-        example, class methods, methods dynamically created and/or methods of any sub-instance of a class instance.
+        example, class methods, methods dynamically added and/or methods of any sub-instance of a class instance.
 
         :param method_name_args: method name(s) of the one or more decorator methods.
         :param method_sub_instance: name of the sub-instance to be prepended to each method name.
@@ -81,10 +69,14 @@ class DynDecorator:
             method_name = method_names.pop()
 
             def dynamic_decorator_func(instance, *args, **kwargs) -> Any:
-                if '.' in method_name:
-                    return cls.__decorate_with_method_in_sub_instance(method_name, instance, func, *args, **kwargs)
-                else:
-                    return cls.__decorate_with_method_in_instance(method_name, instance, func, *args, **kwargs)
+                decorator_args = (func, ) + args
+                if cls.__is_sub_object(method_name):
+                    kwargs["decorated_self"] = instance
+                try:
+                    return cls.__try_invoke_method(method_name, instance, *decorator_args, **kwargs)
+                except ErrorMethodNotFound:
+                    kwargs.pop("decorated_self", None)
+                    return func(instance, *args, **kwargs)
 
             if method_names:
                 return dynamic_decorator_wrapper(dynamic_decorator_func, method_names=method_names)
@@ -92,3 +84,23 @@ class DynDecorator:
                 return dynamic_decorator_func
 
         return dynamic_decorator_wrapper
+
+
+    @classmethod
+    def invoke(cls,
+        method_name: str,
+        instance: object,
+        *args,
+        **kwargs
+    ) -> Any:
+        """Attempt to invoke a method of a class instance. If the method is not found code execution proceeds normally.
+
+        :param method_name: name of a method of the class instance or path (in dot notation) to a method of a
+                            sub-instance.
+        :param instance: class instance that may optionally include the method referenced to with `method_name`.
+        :return: value returned by the method, if such a method exists.
+        """
+        try:
+            return cls.__try_invoke_method(method_name, instance, *args, **kwargs)
+        except ErrorMethodNotFound:
+            return None
