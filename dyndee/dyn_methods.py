@@ -1,4 +1,4 @@
-"""DynDecorator v. 1.0.05 """
+"""DynMethods v. 1.0.05 """
 
 from operator import attrgetter
 from typing import Any, Callable, List
@@ -8,7 +8,7 @@ class ErrorMethodNotFound(Exception):
     """Raised when a dynamic method cannot be found."""
 
 
-class DynDecorator:
+class DynMethods:
     """Invoke methods dynamically added to a class."""
 
     @staticmethod
