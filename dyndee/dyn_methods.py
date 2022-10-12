@@ -1,5 +1,6 @@
 """DynMethods v. 1.0.05 """
 
+from contextlib import AbstractContextManager
 from operator import attrgetter
 from typing import Any, Callable, List
 
@@ -93,7 +94,8 @@ class DynMethods:
         *args,
         **kwargs
     ) -> Any:
-        """Attempt to invoke a method of a class instance. If the method is not found code execution proceeds normally.
+        """Attempt to invoke a method of a class instance. If the method is not found, code execution proceeds
+        normally.
 
         :param method_name: name of a method of the class instance or path (in dot notation) to a method of a
                             sub-instance.
@@ -104,3 +106,22 @@ class DynMethods:
             return cls.__try_invoke_method(method_name, instance, *args, **kwargs)
         except ErrorMethodNotFound:
             return None
+
+
+    class safezone(AbstractContextManager):
+        """Context manager to suppress `AttributeError` exceptions raised when specific methods are not available.
+        After the exception is suppressed, execution proceeds with the next statement following the with statement.
+        """
+
+        def __init__(self, *method_names):
+            self.__method_names = method_names
+
+        def __enter__(self):
+            pass
+
+        def __exit__(self, exctype, excinst, exctb):
+            return (
+                exctype is not None and
+                issubclass(exctype, AttributeError) and
+                (not self.__method_names or excinst.name in self.__method_names)
+            )
