@@ -1,8 +1,10 @@
-"""ClassMerger v. 1.0.04 """
+"""ClassMerger v. 1.0.05 """
 
-from typing import Callable, Dict, List, Tuple, Type
+from typing import Any, Callable, Dict, List, Tuple, Type
 from collections import deque
 import inspect
+
+from dyndee.dyn_loader import DynLoader
 
 
 class ClassInitMerger:
@@ -65,6 +67,23 @@ class ClassMerger:
     """Merge a base class with one or more extension classes."""
 
     @staticmethod
+    def import_classes(func: Callable) -> Callable:
+        """Decorator to import classes if passed as string."""
+        def return_imported_classes(base_class: Any, *extension_classes: Any) -> Type:
+            all_classes = []
+            for class_id in (base_class,) + extension_classes:
+                if type(class_id) == str:
+                    cl = DynLoader.import_class(class_id)
+                else:
+                    cl = class_id
+                all_classes.append(cl)
+            return func(all_classes[0], *all_classes[1:])
+
+        return return_imported_classes
+
+
+    @staticmethod
+    @import_classes
     def merge(base_class: Type, *extension_classes: Type) -> Type:
         """Merge (i.e., extend) a base class with one or more extension classes. If more than one adapter classes are
         provided, then the classes are extended in sequence (from the first one to the last).

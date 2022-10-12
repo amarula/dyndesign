@@ -9,12 +9,21 @@ def test_simple_merge():
     `B.__init__`. It is noted that `B.__init__` invokes method `m2` which is defined only in `A`, not in `B` itself.
     """
     merged_class = ClassMerger.merge(A, B)
-    merged_object = merged_class()
-    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_A__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_A__M2, "Error initializing attribute `a3`"
-    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == cmr.CLASS_A__M2, "Error calling method `m2`"
+    merged_instance = merged_class()
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_A__A2, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_A__M2, "Error initializing attribute `a3`"
+    assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_instance.m2() == cmr.CLASS_A__M2, "Error calling method `m2`"
+
+
+def test_merge_imported():
+    """Simple test similar to `test_simple_merge`, but with classes `A` and `B` imported dynamically.
+    """
+    merged_class = ClassMerger.merge("tests.sample_classes_imported.A", "tests.sample_classes_imported.B")
+    merged_instance = merged_class()
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
 
 
 def test_multi_merge():
@@ -25,12 +34,12 @@ def test_multi_merge():
     `A.__init__`, `B.__init__`, `C_child.__init__`, `C.__init__`.
     """
     merged_class = ClassMerger.merge(A, B_child, C_child)
-    merged_object = merged_class()
-    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_B_CHILD__M3, "Error initializing attribute `a3`"
-    assert merged_object.m1() == cmr.CLASS_C__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == cmr.CLASS_C_CHILD__M2, "Error calling method `m2`"
+    merged_instance = merged_class()
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_B_CHILD__M3, "Error initializing attribute `a3`"
+    assert merged_instance.m1() == cmr.CLASS_C__M1, "Error overloading method `m1`"
+    assert merged_instance.m2() == cmr.CLASS_C_CHILD__M2, "Error calling method `m2`"
 
 
 def test_merge_lambda_methods():
@@ -38,12 +47,12 @@ def test_merge_lambda_methods():
     method `m3` is defined as an alias of `m1`, and `m2` is defined as lambda function.
     """
     merged_class = ClassMerger.merge(D, C_child, B)
-    merged_object = merged_class()
-    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_D__M2, "Error initializing attribute `a3`"
-    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == cmr.CLASS_D__M2, "Error calling method `m2`"
+    merged_instance = merged_class()
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_D__M2, "Error initializing attribute `a3`"
+    assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_instance.m2() == cmr.CLASS_D__M2, "Error calling method `m2`"
 
 
 def test_merge_with_multi_init_args_1():
@@ -52,22 +61,22 @@ def test_merge_with_multi_init_args_1():
     is initialized with no arguments, according to its signature.
     """
     merged_class = ClassMerger.merge(E, B)
-    merged_object = merged_class(cmr.CLASS_E__P1, cmr.CLASS_E__P2)
-    assert merged_object.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_E__P1, "Error initializing attribute `a3`"
-    assert merged_object.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
-    assert merged_object.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
+    merged_instance = merged_class(cmr.CLASS_E__P1, cmr.CLASS_E__P2)
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_E__P1, "Error initializing attribute `a3`"
+    assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_instance.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
 
 
 def test_merge_with_multi_init_args_2():
     """Constructor of class `E` accepts both the initializing arguments, while constructor of class `F` accepts the
     first argument only, according to its signature."""
     merged_class = ClassMerger.merge(E, F)
-    merged_object = merged_class(cmr.CLASS_F__P1, cmr.CLASS_E__P2)
-    assert merged_object.a1 == cmr.CLASS_F__P1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_F__P1, "Error initializing attribute `a2`"
-    assert merged_object.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
+    merged_instance = merged_class(cmr.CLASS_F__P1, cmr.CLASS_E__P2)
+    assert merged_instance.a1 == cmr.CLASS_F__P1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_F__P1, "Error initializing attribute `a2`"
+    assert merged_instance.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
 
 
 def test_merge_with_kw_only_args():
@@ -76,16 +85,16 @@ def test_merge_with_kw_only_args():
     keyword-only argument.
     """
     merged_class = ClassMerger.merge(E, G)
-    merged_object = merged_class(
+    merged_instance = merged_class(
         param_1=cmr.CLASS_E__P1,
         param_2=cmr.CLASS_E__P2,
         option=cmr.CLASS_G__O1,
         kwonly=cmr.CLASS_G__K1
     )
-    assert merged_object.a1 == cmr.CLASS_G__O1, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_E__P1, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_G__K1, "Error initializing attribute `a3`"
-    assert merged_object.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
+    assert merged_instance.a1 == cmr.CLASS_G__O1, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_E__P1, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_G__K1, "Error initializing attribute `a3`"
+    assert merged_instance.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
 
 
 def test_merge_merged_class():
@@ -95,7 +104,7 @@ def test_merge_merged_class():
     """
     merged_class = ClassMerger.merge(E, G)
     merged_class_2 = ClassMerger.merge(merged_class, H)
-    merged_object = merged_class_2(
+    merged_instance = merged_class_2(
         param_1=cmr.CLASS_E__P1,
         param_2=cmr.CLASS_E__P2,
         option=cmr.CLASS_G__O1,
@@ -103,7 +112,7 @@ def test_merge_merged_class():
         option_2=cmr.CLASS_H__O2,
         kwonly_2=cmr.CLASS_H__K2
     )
-    assert merged_object.a1 == cmr.CLASS_H__O2, "Error initializing attribute `a1`"
-    assert merged_object.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
-    assert merged_object.a3 == cmr.CLASS_H__K2, "Error initializing attribute `a3`"
-    assert merged_object.m2() == cmr.CLASS_H__M2, "Error calling method `m2`"
+    assert merged_instance.a1 == cmr.CLASS_H__O2, "Error initializing attribute `a1`"
+    assert merged_instance.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
+    assert merged_instance.a3 == cmr.CLASS_H__K2, "Error initializing attribute `a3`"
+    assert merged_instance.m2() == cmr.CLASS_H__M2, "Error calling method `m2`"
