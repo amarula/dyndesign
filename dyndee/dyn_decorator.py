@@ -1,3 +1,5 @@
+"""DynDecorator v. 1.0.04 """
+
 from operator import attrgetter
 from typing import Any, Callable, List
 
@@ -47,13 +49,13 @@ class DynDecorator:
             method = attrgetter(method_name)(instance)
         except AttributeError:
             return func(instance, *args, **kwargs)
-        return method.__call__(func, instance, *args, **kwargs)
+        return method.__call__(func, decorated_self=instance, *args, **kwargs)
 
 
     @classmethod
     def decorate_with(cls,
         *method_name_args: str,
-        method_sub_instance: str = None
+        method_sub_instance: str = ''
     ) -> Callable:
         """Meta decorator to decorate a function with one or more decorator methods. Decorator methods can be, for
         example, class methods, methods dynamically created and/or methods of any sub-instance of a class instance.
