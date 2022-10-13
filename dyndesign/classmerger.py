@@ -1,4 +1,4 @@
-"""Classmerger v. 1.0.06 .
+"""Classmerger v. 1.0.05 .
 
 Merge a base class with one or more extension classes.
 """

@@ -1,4 +1,4 @@
-"""Singletonmeta v. 1.0.06 """
+"""Singletonmeta v. 1.0.05 """
 from typing import Any
 
 

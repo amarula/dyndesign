@@ -1,4 +1,4 @@
-"""Dynloader v. 1.0.06
+"""Dynloader v. 1.0.05
 
 Toolset for class dynamic loading.
 """
