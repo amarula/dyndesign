@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Tuple, Type
 from collections import deque
 import inspect
 
-from dyndee.dynloader import importclass
+from dyndesign.dynloader import importclass
 
 
 def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:

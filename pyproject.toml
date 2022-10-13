@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dyndee"
+name = "dyndesign"
 version = "0.1.0"
 description = ""
 authors = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
@@ -7,10 +7,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^0.982"
 
 [build-system]
 requires = ["poetry-core"]
