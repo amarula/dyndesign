@@ -1,4 +1,4 @@
-"""Dynmethods v. 1.0.05
+"""Dynmethod v. 1.0.05
 
 Invoke methods that have been dynamically added to a class.
 """
