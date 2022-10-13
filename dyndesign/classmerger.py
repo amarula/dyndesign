@@ -41,7 +41,7 @@ def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
     return res_args, res_kwargs
 
 
-def __merge_class_inits(classes: Tuple[Type, ...]) -> Callable:
+def __merge_class_inits(classes: List[Type]) -> Callable:
     """Build a merged constructor by calling the constructors of the merged classes.
 
     :param classes: merged classes.
@@ -61,23 +61,19 @@ def __merge_class_inits(classes: Tuple[Type, ...]) -> Callable:
     return init_all_classes
 
 
-def __import_classes(func: Callable) -> Callable:
-    """Decorator to import classes if passed as string."""
-    def return_imported_classes(base_class: Any, *extension_classes: Any) -> Type:
-        all_classes = []
-        for class_id in (base_class,) + extension_classes:
-            if type(class_id) == str:
-                cl = importclass(class_id)
-            else:
-                cl = class_id
-            all_classes.append(cl)
-        return func(all_classes[0], *all_classes[1:])
-
-    return return_imported_classes
+def __preprocess_classes(all_classes: Any) -> List[Type]:
+    """Dynamically import classes if passed as strings."""
+    result_classes = []
+    for class_id in all_classes:
+        if type(class_id) == str:
+            cl = importclass(class_id)
+        else:
+            cl = class_id
+        result_classes.append(cl)
+    return result_classes
 
 
-@__import_classes
-def mergeclasses(base_class: Type, *extension_classes: Type) -> Type:
+def mergeclasses(base_class: Any, *extension_classes: Any) -> Type:
     """Merge (i.e., extend) a base class with one or more extension classes. If more than one adapter classes are
     provided, then the classes are extended in sequence (from the first one to the last).
 
@@ -85,10 +81,10 @@ def mergeclasses(base_class: Type, *extension_classes: Type) -> Type:
     :param extension_classes: extension classes.
     :return: merged class.
     """
-    result_classes = (base_class,) + extension_classes
-    init_all_classes = __merge_class_inits(result_classes)
+    all_classes = __preprocess_classes((base_class,) + extension_classes)
+    init_all_classes = __merge_class_inits(all_classes)
     return type(
-        base_class.__name__,
-        result_classes[::-1],
+        all_classes[0].__name__,
+        tuple(all_classes[::-1]),
         {"__init__": init_all_classes}
     )
