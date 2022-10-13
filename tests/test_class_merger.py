@@ -1,4 +1,4 @@
-from dyndee.class_merger import mergeclasses
+from dyndee.classmerger import mergeclasses
 from .testing_results import ClassMergeResults as cmr
 from .sample_classes import *
 

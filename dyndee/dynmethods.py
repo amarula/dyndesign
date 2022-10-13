@@ -1,4 +1,4 @@
-"""Dyn_methods v. 1.0.06
+"""Dynmethods v. 1.0.06
 
 Invoke methods that have been dynamically added to a class.
 """

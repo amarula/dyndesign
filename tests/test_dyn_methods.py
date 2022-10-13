@@ -1,4 +1,4 @@
-from dyndee.class_merger import mergeclasses
+from dyndee.classmerger import mergeclasses
 from .testing_results import DynamicMethodsResults as cdr
 from .sample_imported_methods import *
 

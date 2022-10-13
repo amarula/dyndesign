@@ -1,4 +1,4 @@
-"""Class_merger v. 1.0.06 .
+"""Classmerger v. 1.0.06 .
 
 Merge a base class with one or more extension classes.
 """
@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Tuple, Type
 from collections import deque
 import inspect
 
-from dyndee.dyn_loader import importclass
+from dyndee.dynloader import importclass
 
 
 def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:

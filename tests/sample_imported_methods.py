@@ -1,4 +1,4 @@
-import dyndee.dyn_methods as dynm
+import dyndee.dynmethods as dynm
 from .testing_results import DynamicMethodsResults as cdr
 
 

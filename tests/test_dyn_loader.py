@@ -1,4 +1,4 @@
-from dyndee.dyn_loader import importclass
+from dyndee.dynloader import importclass
 
 TEST_CLASS_1_MODULE = 'tests.sample_classes'
 TEST_CLASS_1_NAME = 'A'
