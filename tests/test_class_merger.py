@@ -1,4 +1,4 @@
-from dyndee.class_merger import ClassMerger
+from dyndee.class_merger import mergeclasses
 from .testing_results import ClassMergeResults as cmr
 from .sample_classes import *
 
@@ -8,7 +8,7 @@ def test_simple_merge():
     attributes and methods of the former, whereas the constructors are invoked following the order `A.__init__`,
     `B.__init__`. It is noted that `B.__init__` invokes method `m2` which is defined only in `A`, not in `B` itself.
     """
-    merged_class = ClassMerger.merge(A, B)
+    merged_class = mergeclasses(A, B)
     merged_instance = merged_class()
     assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
     assert merged_instance.a2 == cmr.CLASS_A__A2, "Error initializing attribute `a2`"
@@ -20,7 +20,7 @@ def test_simple_merge():
 def test_merge_imported():
     """Simple test similar to `test_simple_merge`, but with classes `A` and `B` imported dynamically.
     """
-    merged_class = ClassMerger.merge("tests.sample_classes_imported.A", "tests.sample_classes_imported.B")
+    merged_class = mergeclasses("tests.sample_classes_imported.A", "tests.sample_classes_imported.B")
     merged_instance = merged_class()
     assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
     assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
@@ -33,7 +33,7 @@ def test_multi_merge():
     between `B` and `B_child` and between `C` and `C_child`. The constructors are invoked following the order
     `A.__init__`, `B.__init__`, `C_child.__init__`, `C.__init__`.
     """
-    merged_class = ClassMerger.merge(A, B_child, C_child)
+    merged_class = mergeclasses(A, B_child, C_child)
     merged_instance = merged_class()
     assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
     assert merged_instance.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
@@ -46,7 +46,7 @@ def test_merge_lambda_methods():
     """This test case shows that class merging works also with method assigned or created dynamically. In class `D`,
     method `m3` is defined as an alias of `m1`, and `m2` is defined as lambda function.
     """
-    merged_class = ClassMerger.merge(D, C_child, B)
+    merged_class = mergeclasses(D, C_child, B)
     merged_instance = merged_class()
     assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
     assert merged_instance.a2 == cmr.CLASS_C_CHILD__A2, "Error initializing attribute `a2`"
@@ -60,7 +60,7 @@ def test_merge_with_multi_init_args_1():
     this case, both the initializing arguments are passed to constructor of class `E`, while constructor of class `B`
     is initialized with no arguments, according to its signature.
     """
-    merged_class = ClassMerger.merge(E, B)
+    merged_class = mergeclasses(E, B)
     merged_instance = merged_class(cmr.CLASS_E__P1, cmr.CLASS_E__P2)
     assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
     assert merged_instance.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
@@ -72,7 +72,7 @@ def test_merge_with_multi_init_args_1():
 def test_merge_with_multi_init_args_2():
     """Constructor of class `E` accepts both the initializing arguments, while constructor of class `F` accepts the
     first argument only, according to its signature."""
-    merged_class = ClassMerger.merge(E, F)
+    merged_class = mergeclasses(E, F)
     merged_instance = merged_class(cmr.CLASS_F__P1, cmr.CLASS_E__P2)
     assert merged_instance.a1 == cmr.CLASS_F__P1, "Error initializing attribute `a1`"
     assert merged_instance.a2 == cmr.CLASS_F__P1, "Error initializing attribute `a2`"
@@ -84,7 +84,7 @@ def test_merge_with_kw_only_args():
     of class `G` accepts `param_1` as positional-only argument, `option` as regular argument and `kwonly` as
     keyword-only argument.
     """
-    merged_class = ClassMerger.merge(E, G)
+    merged_class = mergeclasses(E, G)
     merged_instance = merged_class(
         param_1=cmr.CLASS_E__P1,
         param_2=cmr.CLASS_E__P2,
@@ -102,8 +102,8 @@ def test_merge_merged_class():
     in turn with class `H`. Constructor of class `H` accepts `param_2` as positional-only argument, `option_2` as
     regular argument and `kwonly_2` as keyword-only argument.
     """
-    merged_class = ClassMerger.merge(E, G)
-    merged_class_2 = ClassMerger.merge(merged_class, H)
+    merged_class = mergeclasses(E, G)
+    merged_class_2 = mergeclasses(merged_class, H)
     merged_instance = merged_class_2(
         param_1=cmr.CLASS_E__P1,
         param_2=cmr.CLASS_E__P2,

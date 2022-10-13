@@ -1,10 +1,10 @@
-from dyndee.dyn_methods import DynMethods
+import dyndee.dyn_methods as dynm
 from .testing_results import DynamicMethodsResults as cdr
 
 
 class A:
 
-    @DynMethods.decorate_with("m2")
+    @dynm.decorate_with("m2")
     def m1(self):
         return cdr.CLASS_A__M1
 
@@ -14,7 +14,7 @@ class A:
 
 class B:
 
-    @DynMethods.decorate_with("d1")
+    @dynm.decorate_with("d1")
     def m1(self):
         return cdr.CLASS_B__M1
 
@@ -25,11 +25,11 @@ class C:
         self.param1 = param1
 
     def m1(self):
-        with DynMethods.safezone("d2"):
+        with dynm.safezone("d2"):
             return self.d2()
 
 
 class D:
 
     def m1(self):
-        return DynMethods.invoke("d3", self)
+        return dynm.invoke("d3", self)
