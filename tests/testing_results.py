@@ -34,3 +34,7 @@ class DynamicMethodsResults(IntEnum):
     CLASS_DM_B__D1 = auto()
     CLASS_DM_C__M1 = auto()
     CLASS_DM_D__M1 = auto()
+    CLASS_E__C1 = auto()
+    CLASS_E__M1 = auto()
+    CLASS_F__C2 = auto()
+    CLASS_F__M1 = auto()

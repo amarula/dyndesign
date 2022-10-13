@@ -37,7 +37,8 @@ def __try_invoke_method(
 
 def decoratewith(
     *method_name_args: str,
-    method_sub_instance: str = ''
+    method_sub_instance: str = None,  # type: ignore
+    decorator_fallback: Callable = None  # type: ignore
 ) -> Callable:
     """Meta decorator to decorate a function with one or more decorator methods. Decorator methods can be, for
     example, class methods, methods dynamically added and/or methods of any sub-instance of a class instance.
@@ -70,6 +71,8 @@ def decoratewith(
                 return __try_invoke_method(method_name, instance, *decorator_args, **kwargs)
             except ErrorMethodNotFound:
                 kwargs.pop("decorated_self", None)
+                if decorator_fallback:
+                    decorator_fallback(instance, *args, **kwargs)
                 return func(instance, *args, **kwargs)
 
         if method_names:
@@ -83,6 +86,7 @@ def decoratewith(
 def invoke(
     method_name: str,
     instance: object,
+    method_fallback: Callable = None,  # type: ignore
     *args,
     **kwargs
 ) -> Any:
@@ -97,6 +101,8 @@ def invoke(
     try:
         return __try_invoke_method(method_name, instance, *args, **kwargs)
     except ErrorMethodNotFound:
+        if method_fallback:
+            method_fallback(*args, **kwargs)
         return None
 
 

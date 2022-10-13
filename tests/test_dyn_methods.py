@@ -23,7 +23,7 @@ def test_decoration_with_class_dynamically_imported():
     assert merged_instance.m1() == (cdr.CLASS_B__M1, cdr.CLASS_DM_B__D1), "Error calling method `m1`"
 
 
-def test_decorator_not_loaded_and_still_works():
+def test_decorator_not_loaded():
     """If a dynamic decorator method is not found, it is simply ignored and code execution proceeds normally."""
     instance_B = B()
     assert instance_B.m1() == cdr.CLASS_B__M1, "Error calling method `m1`"
@@ -65,9 +65,27 @@ def test_invocation_with_class_dynamically_imported():
     assert merged_instance.m1() == cdr.CLASS_DM_D__M1, "Error calling method `m1`"
 
 
-def test_invocation_method_not_loaded_and_still_works():
+def test_invocation_method_not_loaded():
     """Class `D` is instantiated without merging with class `DM_D`, thus method `d3` is not found and method `m1`
     returns `None`.
     """
     instance_D = D()
     assert instance_D.m1() == None, "Error calling method `m1`"
+
+
+def test_decorator_with_decorator_fallback():
+    """Method `m1` of class `E` is dynamically decorated with non-existent method `d4` while passing method `c1` as
+    decorator fallback.
+    """
+    instance_E = E()
+    assert instance_E.m1() == cdr.CLASS_E__M1, "Error calling method `m1`"
+    assert instance_E.param1 == cdr.CLASS_E__C1, "Error executing decorator-not-found callback"
+
+
+def test_invocation_with_method_fallback():
+    """Method `m1` of class `F` attempts to invoke non-existent method `d5` while passing method `c2` as method
+    fallback.
+    """
+    instance_F = F()
+    assert instance_F.m1() == cdr.CLASS_F__M1, "Error calling method `m1`"
+    assert instance_F.param1 == cdr.CLASS_F__C2, "Error executing method-not-found callback"

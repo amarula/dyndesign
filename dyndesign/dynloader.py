@@ -6,7 +6,10 @@ Toolset for class dynamic loading.
 from typing import Type
 
 
-def importclass(module_name: str, class_name: str = '') -> Type:
+def importclass(
+    module_name: str,
+    class_name: str = None  # type: ignore
+) -> Type:
     """Dynamically import a class from a python module.
 
     :param module_name: name of the module to import.

@@ -38,3 +38,23 @@ class D:
 
     def m1(self):
         return dynm.invoke("d3", self)
+
+
+class E:
+
+    def c1(self):
+        self.param1 = cdr.CLASS_E__C1
+
+    @dynm.decoratewith("d4", decorator_fallback=c1)
+    def m1(self):
+        return cdr.CLASS_E__M1
+
+
+class F:
+
+    def c2(self):
+        self.param1 = cdr.CLASS_F__C2
+
+    def m1(self):
+        dynm.invoke("d5", self, method_fallback=self.c2)
+        return cdr.CLASS_F__M1
