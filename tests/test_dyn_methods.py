@@ -1,3 +1,5 @@
+import pytest
+
 from dyndesign.classmerger import mergeclasses
 from .testing_results import DynamicMethodsResults as cdr
 from .sample_imported_methods import *
@@ -36,12 +38,22 @@ def test_dynamic_context_manager_with_class_dynamically_imported():
     assert merged_instance.m1() == (cdr.CLASS_C__M1, cdr.CLASS_DM_C__M1), "Error calling method `m1`"
 
 
-def test_context_manager_suppress_exception_when_method_not_loaded():
-    """Class `C` is instantiated without merging with class `DM_C`, thus method `d2` is not found and method `m1`
-    returns `None`.
+def test_context_manager_suppress_exceptions_when_method_not_loaded():
+    """Class `C` is instantiated without merging with class `DM_C`, and method `m1` returns `None` since method `d2`
+    (invoked by method `m1`) is not found.
     """
     instance_C = C(cdr.CLASS_DM_C__M1)
     assert instance_C.m1() == None, "Error calling method `m1`"
+
+
+def test_context_manager_suppress_exceptions_for_specific_methods():
+    """Class `C` is instantiated without merging with class `DM_C`, and the safe zone in method `m2` suppresses
+    exception `AttributeError` only if it is raised by invoking method `d2`. Thus, an exception `AttributeError` when
+    method `does_not_exist` is invoked.
+    """
+    instance_C = C(cdr.CLASS_DM_C__M1)
+    with pytest.raises(AttributeError):
+        instance_C.m2()
 
 
 def test_invocation_with_class_dynamically_imported():

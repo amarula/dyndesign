@@ -25,7 +25,12 @@ class C:
         self.param1 = param1
 
     def m1(self):
+        with dynm.safezone():
+            return self.d2()
+
+    def m2(self):
         with dynm.safezone("d2"):
+            self.does_not_exist()
             return self.d2()
 
 
