@@ -4,7 +4,7 @@ from .testing_results import DynamicMethodsResults as cdr
 
 class A:
 
-    @dynm.decorate_with("m2")
+    @dynm.decoratewith("m2")
     def m1(self):
         return cdr.CLASS_A__M1
 
@@ -14,7 +14,7 @@ class A:
 
 class B:
 
-    @dynm.decorate_with("d1")
+    @dynm.decoratewith("d1")
     def m1(self):
         return cdr.CLASS_B__M1
 

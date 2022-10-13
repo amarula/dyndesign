@@ -35,7 +35,7 @@ def __try_invoke_method(
     return method.__call__(*args, **kwargs)
 
 
-def decorate_with(
+def decoratewith(
     *method_name_args: str,
     method_sub_instance: str = ''
 ) -> Callable:
