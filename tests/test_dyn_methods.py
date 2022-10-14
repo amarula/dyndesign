@@ -35,7 +35,7 @@ def test_dynamic_context_manager_with_class_dynamically_imported():
     """
     merged_class = mergeclasses(C, "tests.sample_classes_imported.DM_C")
     merged_instance = merged_class(cdr.CLASS_C__M1)
-    assert merged_instance.m1() == (cdr.CLASS_C__M1, cdr.CLASS_DM_C__M1), "Error calling method `m1`"
+    assert merged_instance.m1() == (cdr.CLASS_C__M1, cdr.CLASS_DM_C__D2), "Error calling method `m1`"
 
 
 def test_context_manager_suppress_exceptions_when_method_not_loaded():
@@ -62,7 +62,7 @@ def test_invocation_with_class_dynamically_imported():
     """
     merged_class = mergeclasses(D, "tests.sample_classes_imported.DM_D")
     merged_instance = merged_class()
-    assert merged_instance.m1() == cdr.CLASS_DM_D__M1, "Error calling method `m1`"
+    assert merged_instance.m1() == cdr.CLASS_DM_D__D3, "Error calling method `m1`"
 
 
 def test_invocation_method_not_loaded():
@@ -89,3 +89,27 @@ def test_invocation_with_method_fallback():
     instance_F = F()
     assert instance_F.m1() == cdr.CLASS_F__M1, "Error calling method `m1`"
     assert instance_F.param1 == cdr.CLASS_F__C2, "Error executing method-not-found callback"
+
+
+def test_decorator_with_method_of_parent():
+    """Method `m1` of class `H` is decorated with method `d6` of the parent class."""
+    instance_H = H()
+    assert instance_H.m1() == (cdr.CLASS_H__M1, cdr.CLASS_DM_G__D6), "Error calling method `m1`"
+
+
+def test_decorator_with_method_of_component_class():
+    """Method `m1` of class `I` is decorated with method `d7` of the component class DM_I (dynamically imported)."""
+    instance_I = I()
+    assert instance_I.m1() == (cdr.CLASS_I__M1, cdr.CLASS_DM_I__D7), "Error calling method `m1`"
+
+
+def test_decorator_with_multiple_methods_of_component_class():
+    """Method `m1` of class `J` is decorated with methods `d8` and `d9` of the component class DM_J by passing the name
+    of the component class instance as argument `method_sub_instance` to `decoratewith`.
+    """
+    instance_J = J()
+    assert instance_J.m1() == (
+        cdr.CLASS_DM_J__D8,
+        cdr.CLASS_DM_J__D9,
+        cdr.CLASS_J__M1
+    ), "Error calling method `m1`"
