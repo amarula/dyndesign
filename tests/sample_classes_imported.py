@@ -17,6 +17,10 @@ class B:
         return cmr.CLASS_B__M1
 
 
+class C:
+    pass
+
+
 class DM_B:
 
     def d1(self, func):
