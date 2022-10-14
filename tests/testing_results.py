@@ -46,3 +46,7 @@ class DynamicMethodsResults(IntEnum):
     CLASS_J__M1 = auto()
     CLASS_DM_J__D8 = auto()
     CLASS_DM_J__D9 = auto()
+
+
+class SingletonsResults(IntEnum):
+    CLASS_A__P1 = auto()
