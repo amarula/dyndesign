@@ -87,3 +87,9 @@ class H:
 
     def m2(self):
         return cmr.CLASS_H__M2
+
+
+class I:
+
+    def m1(self):
+        return cmr.CLASS_I__M1

@@ -98,9 +98,10 @@ def test_merge_with_kw_only_args():
 
 
 def test_merge_merged_class():
-    """This test case shows how merged class `merged_class` of test case `test_merge_with_kw_only_args` can be merged
-    in turn with class `H`. Constructor of class `H` accepts `param_2` as positional-only argument, `option_2` as
-    regular argument and `kwonly_2` as keyword-only argument.
+    """This test case shows how merged class can be merged in turn with other classes. In this case, merged class
+    `merged_class` of test case `test_merge_with_kw_only_args` is merged with class `H`. Constructor of class `H`
+    accepts `param_2` as positional-only argument, `option_2` as regular argument and `kwonly_2` as keyword-only
+    argument.
     """
     merged_class = mergeclasses(E, G)
     merged_class_2 = mergeclasses(merged_class, H)
@@ -116,3 +117,25 @@ def test_merge_merged_class():
     assert merged_instance.a2 == cmr.CLASS_E__P2, "Error initializing attribute `a2`"
     assert merged_instance.a3 == cmr.CLASS_H__K2, "Error initializing attribute `a3`"
     assert merged_instance.m2() == cmr.CLASS_H__M2, "Error calling method `m2`"
+
+
+def test_merge_singleton_class():
+    """Singleton classes can be merged too, and the merged class inherits the singleton properties. In this case, class
+    `F` is merged with dynamically-loaded singleton class `A` and then the merged class is instantiated two times: both
+    the times the same instance of the merged class is returned.
+    """
+    merged_class = mergeclasses(F, "tests.sample_singletons.A")
+    merged_class(cmr.CLASS_F_SING__P1)
+    merged_instance = merged_class()
+    assert merged_instance.a2 == cmr.CLASS_F_SING__P1, "Error initializing attribute `a2`"
+    assert merged_instance.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
+
+
+def test_merge_singleton_class_destroy():
+    """Class `I` is merged with dynamically-loaded singleton class `A`, and the merged class is correctly destroyed."""
+    merged_class = mergeclasses(I, "tests.sample_singletons.A")
+    merged_class(cmr.CLASS_F_SING__P1)
+    merged_class.destroy()
+    merged_instance = merged_class()
+    assert 'param1' not in dir(merged_instance), "Error destroying singleton `A`"
+    assert merged_instance.m1() == cmr.CLASS_I__M1, "Error calling method `m1`"
