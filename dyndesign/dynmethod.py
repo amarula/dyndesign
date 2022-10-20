@@ -1,9 +1,10 @@
-"""Dynmethod v. 1.0.05
+"""Dynmethod v. 1.0.06
 
 Invoke methods that have been dynamically added to a class.
 """
 
 from contextlib import AbstractContextManager
+from functools import wraps
 from operator import attrgetter
 from typing import Any, Callable, List
 
@@ -63,6 +64,7 @@ def decoratewith(
         """
         method_name = method_names.pop()
 
+        @wraps(func)
         def dynamic_decorator_func(instance, *args, **kwargs) -> Any:
             decorator_args = (func, ) + args
             if __is_sub_object(method_name):
