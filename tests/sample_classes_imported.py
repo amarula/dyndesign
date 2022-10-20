@@ -41,8 +41,11 @@ class DM_D:
 
 class DM_I:
 
+    def __init__(self, param1):
+        self.a1 = param1
+
     def d7(self, func, decorated_self):
-        return (func(decorated_self), cdr.CLASS_DM_I__D7)
+        return (func(decorated_self), self.a1)
 
 
 class DM_J:

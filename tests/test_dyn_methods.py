@@ -100,7 +100,7 @@ def test_decorator_with_method_of_parent():
 def test_decorator_with_method_of_component_class():
     """Method `m1` of class `I` is decorated with method `d7` of the component class DM_I (dynamically imported)."""
     instance_I = I()
-    assert instance_I.m1() == (cdr.CLASS_I__M1, cdr.CLASS_DM_I__D7), "Error calling method `m1`"
+    assert instance_I.m1() == (cdr.CLASS_I__M1, cdr.CLASS_I__A1), "Error calling method `m1`"
 
 
 def test_decorator_with_multiple_methods_of_component_class():

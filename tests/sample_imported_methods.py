@@ -77,7 +77,7 @@ class H(G):
 class I:
 
     def __init__(self):
-        self.dm_i = importclass("tests.sample_classes_imported.DM_I")()
+        self.dm_i = importclass("tests.sample_classes_imported.DM_I")(cdr.CLASS_I__A1)
 
     @dynm.decoratewith("dm_i.d7")
     def m1(self):
