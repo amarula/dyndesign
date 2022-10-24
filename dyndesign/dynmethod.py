@@ -113,18 +113,25 @@ class safezone(AbstractContextManager):
     After the exception is suppressed, execution proceeds with the next statement following the with statement.
     """
 
-    def __init__(self, *method_names):
+    def __init__(self,
+        *method_names: str,
+        fallback: Callable = None,  # type: ignore
+    ):
         self.__method_names = method_names
+        self.__fallback = fallback
 
     def __enter__(self):
         pass
 
     def __exit__(self, exctype, excinst, exctb):
-        return (
+        result = (
             exctype is not None and
             issubclass(exctype, AttributeError) and
             (not self.__method_names or excinst.name in self.__method_names)
         )
+        if result and self.__fallback:
+            self.__fallback()
+        return result
 
 
 class ErrorMethodNotFound(Exception):
