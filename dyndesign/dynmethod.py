@@ -124,9 +124,10 @@ class safezone(AbstractContextManager):
         pass
 
     def __exit__(self, exctype, excinst, exctb):
+        expected_exception = AttributeError if 'obj' in dir(exctype) else NameError
         result = (
             exctype is not None and
-            issubclass(exctype, AttributeError) and
+            issubclass(exctype, expected_exception) and
             (not self.__method_names or excinst.name in self.__method_names)
         )
         if result and self.__fallback:

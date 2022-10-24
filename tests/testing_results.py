@@ -48,6 +48,7 @@ class DynamicMethodsResults(IntEnum):
     CLASS_J__M1 = auto()
     CLASS_DM_J__D8 = auto()
     CLASS_DM_J__D9 = auto()
+    MISSING_FUNCTION_RES = auto()
 
 
 class SingletonsResults(IntEnum):

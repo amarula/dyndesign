@@ -1,6 +1,6 @@
 import pytest
 
-from dyndesign import mergeclasses
+from dyndesign import mergeclasses, safezone
 from .testing_results import DynamicMethodsResults as cdr
 from .sample_imported_methods import *
 
@@ -40,10 +40,21 @@ def test_dynamic_context_manager_with_class_dynamically_imported():
 
 def test_context_manager_suppress_exceptions_when_method_not_loaded():
     """Class `C` is instantiated without merging with class `DM_C`, and method `m1` returns `None` since method `d2`
-    (invoked by method `m1`) is not found.
+    (invoked from a safe zone context manager of method `m1`) is not found.
     """
     instance_C = C(cdr.CLASS_DM_C__M1)
     assert instance_C.m1() == None, "Error calling method `m1`"
+
+
+def test_context_manager_suppress_exceptions_when_function_not_found(capsys):
+    """A function `does_not_exist` is invoked from a .
+    """
+    def fallback():
+        print(int(cdr.MISSING_FUNCTION_RES))
+    with safezone(fallback=fallback):
+        does_not_exist()
+    captured = capsys.readouterr()
+    assert captured.out == f"{cdr.MISSING_FUNCTION_RES}\n", "Error with safe zone fallback function"
 
 
 def test_context_manager_suppress_exceptions_for_specific_methods():
