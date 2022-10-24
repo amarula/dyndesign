@@ -1,6 +1,6 @@
 import pytest
 
-from dyndesign.classmerger import mergeclasses
+from dyndesign import mergeclasses
 from .testing_results import DynamicMethodsResults as cdr
 from .sample_imported_methods import *
 

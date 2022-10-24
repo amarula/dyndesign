@@ -1,4 +1,4 @@
-from dyndesign.classmerger import mergeclasses
+from dyndesign import mergeclasses
 from .testing_results import ClassMergeResults as cmr
 from .sample_classes import *
 

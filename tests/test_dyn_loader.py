@@ -1,4 +1,4 @@
-from dyndesign.dynloader import importclass
+from dyndesign import importclass
 
 
 def test_import_class_with_module_and_class():

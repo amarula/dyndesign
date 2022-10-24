@@ -1,4 +1,4 @@
-from dyndesign.singletonmeta import SingletonMeta
+from dyndesign import SingletonMeta
 
 
 class A(metaclass=SingletonMeta):
