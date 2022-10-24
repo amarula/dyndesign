@@ -73,7 +73,7 @@ def test_invocation_method_not_loaded():
     assert instance_D.m1() == None, "Error calling method `m1`"
 
 
-def test_decorator_with_decorator_fallback():
+def test_decorator_with_fallback():
     """Method `m1` of class `E` is dynamically decorated with non-existent method `d4` while passing method `c1` as
     decorator fallback.
     """
@@ -82,7 +82,7 @@ def test_decorator_with_decorator_fallback():
     assert instance_E.param1 == cdr.CLASS_E__C1, "Error executing decorator-not-found callback"
 
 
-def test_invocation_with_method_fallback():
+def test_method_invocation_with_fallback():
     """Method `m1` of class `F` attempts to invoke non-existent method `d5` while passing method `c2` as method
     fallback.
     """

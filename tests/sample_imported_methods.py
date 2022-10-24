@@ -45,7 +45,7 @@ class E:
     def c1(self):
         self.param1 = cdr.CLASS_E__C1
 
-    @decoratewith("d4", decorator_fallback=c1)
+    @decoratewith("d4", fallback=c1)
     def m1(self):
         return cdr.CLASS_E__M1
 
@@ -56,7 +56,7 @@ class F:
         self.param1 = cdr.CLASS_F__C2
 
     def m1(self):
-        invoke("d5", self, method_fallback=self.c2)
+        invoke("d5", self, fallback=self.c2)
         return cdr.CLASS_F__M1
 
 
