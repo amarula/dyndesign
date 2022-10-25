@@ -69,7 +69,7 @@ def test_context_manager_suppress_exceptions_for_specific_methods():
 
 def test_invocation_with_class_dynamically_imported():
     """Class `D` is merged with class `DM_D` (dynamically imported), and method `m1` of class `C` invokes method `d3`
-    of class `DM_C` through the function `invoke`.
+    of class `DM_C` through `safeinvoke`.
     """
     merged_class = mergeclasses(D, "tests.sample_classes_imported.DM_D")
     merged_instance = merged_class()

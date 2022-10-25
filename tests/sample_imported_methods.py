@@ -1,4 +1,4 @@
-from dyndesign import decoratewith, importclass, invoke, safezone
+from dyndesign import decoratewith, importclass, safeinvoke, safezone
 from .testing_results import DynamicMethodsResults as cdr
 
 
@@ -37,7 +37,7 @@ class C:
 class D:
 
     def m1(self):
-        return invoke("d3", self)
+        return safeinvoke("d3", self)
 
 
 class E:
@@ -56,7 +56,7 @@ class F:
         self.param1 = cdr.CLASS_F__C2
 
     def m1(self):
-        invoke("d5", self, fallback=self.c2)
+        safeinvoke("d5", self, fallback=self.c2)
         return cdr.CLASS_F__M1
 
 

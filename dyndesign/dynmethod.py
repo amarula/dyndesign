@@ -86,7 +86,7 @@ def decoratewith(
     return dynamic_decorator_wrapper
 
 
-def invoke(
+def safeinvoke(
     method_name: str,
     instance: object,
     fallback: Callable = None,  # type: ignore
