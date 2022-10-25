@@ -6,6 +6,7 @@ Invoke methods that have been dynamically added to a class.
 from contextlib import AbstractContextManager
 from functools import wraps
 from operator import attrgetter
+import re
 from typing import Any, Callable, List
 
 
@@ -120,15 +121,30 @@ class safezone(AbstractContextManager):
         self.__method_names = method_names
         self.__fallback = fallback
 
+
     def __enter__(self):
         pass
 
+
+    def __is_protected_name(self, excinst):
+        if not self.__method_names:
+            return True
+        try:
+            method_name = excinst.name
+        except AttributeError:
+            method_name = re.findall(r"'([^']+)'", excinst.args[0])[-1]
+        return method_name in self.__method_names
+
+
     def __exit__(self, exctype, excinst, exctb):
-        expected_exception = AttributeError if 'obj' in dir(exctype) else NameError
+        expected_exception = AttributeError if (
+            'tb_frame' in dir(exctb) and
+            'self' in exctb.tb_frame.f_locals
+        ) else NameError
         result = (
             exctype is not None and
             issubclass(exctype, expected_exception) and
-            (not self.__method_names or excinst.name in self.__method_names)
+            self.__is_protected_name(excinst)
         )
         if result and self.__fallback:
             self.__fallback()
