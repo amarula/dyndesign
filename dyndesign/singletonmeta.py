@@ -1,17 +1,18 @@
-"""Singletonmeta v. 1.0.05 """
+"""Create and destroy Singleton classes."""
+
 from typing import Any
 
 
 class SingletonMeta(type):
-    """Meta class to instantiate singleton classes."""
+    """Meta class to instantiate Singleton classes."""
 
     _instances: Any = {}
 
     def __call__(cls, *args, **kwargs) -> type:
-        """Return the singleton class instance, if any instance is found, otherwise create and return a new singleton
+        """Return the Singleton class instance, if any instance is found, otherwise create and return a new Singleton
         class instance.
 
-        :return: singleton class instance.
+        :return: Singleton class instance.
         """
         if cls not in cls._instances:
             instance = super(SingletonMeta, cls).__call__(*args, **kwargs)
@@ -21,5 +22,5 @@ class SingletonMeta(type):
 
     @classmethod
     def destroy(cls):
-        """Delete all the instances of the singleton class."""
+        """Delete all the instances of the Singleton class."""
         cls._instances = {}

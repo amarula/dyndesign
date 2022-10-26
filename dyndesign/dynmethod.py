@@ -1,7 +1,4 @@
-"""Dynmethod v. 1.0.06
-
-Invoke methods that have been dynamically added to a class.
-"""
+"""Invoke methods that have been dynamically added to a class."""
 
 from contextlib import AbstractContextManager
 from functools import wraps
@@ -110,8 +107,9 @@ def safeinvoke(
 
 
 class safezone(AbstractContextManager):
-    """Context manager to suppress `AttributeError` exceptions raised when specific methods are not available.
-    After the exception is suppressed, execution proceeds with the next statement following the with statement.
+    """Context manager to suppress `AttributeError` and `NameError` exceptions raised when specific methods are not
+    available. After suppressing the exception, the execution proceeds with the next statement following the `with`
+    statement.
     """
 
     def __init__(self,
@@ -126,7 +124,7 @@ class safezone(AbstractContextManager):
         pass
 
 
-    def __is_protected_name(self, excinst):
+    def __is_protected_name(self, excinst) -> bool:
         if not self.__method_names:
             return True
         try:
@@ -136,7 +134,7 @@ class safezone(AbstractContextManager):
         return method_name in self.__method_names
 
 
-    def __exit__(self, exctype, excinst, exctb):
+    def __exit__(self, exctype, excinst, exctb) -> bool:
         expected_exception = AttributeError if (
             'tb_frame' in dir(exctb) and
             'self' in exctb.tb_frame.f_locals

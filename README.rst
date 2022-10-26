@@ -1,13 +1,13 @@
 DynDesign
 =========
 
-A collection of tools for dynamic design in Python.
+A set of tools to dynamically design patterns in Python.
 
 
 Install
 -------
 
-``dyndesign`` is on the Python Package Index (PyPI):
+Dyndesign is on the Python Package Index (PyPI):
 
 ::
 
@@ -35,19 +35,18 @@ Decorate a method easily with one or more instance methods:
     def decorated_method(self, ...):
         ...
 
-Safely invoke functions or methods from ``safezone`` context manager:
+Safely invoke functions or methods from the Context Manager ``safezone``:
 
 .. code:: python
 
     from dyndesign import safezone
 
-    def method(self):
-        with safezone():
-            ...
-            function_possibly_non_existent()
-            ...
+    with safezone():
+        ...
+        function_possibly_non_existent()
+        ...
 
-Use Singleton classes (``destroy`` supported)
+Create and destroy Singleton classes
 
 .. code:: python
 
@@ -61,7 +60,7 @@ Use Singleton classes (``destroy`` supported)
     Singleton.destroy()
     new_singleton_instance = Singleton(...)
 
-Import classes dynamically using their path in dot-notation.
+Import classes dynamically using the path:
 
 .. code:: python
 
@@ -173,11 +172,11 @@ class with a method from an extension class:
     # End of method decoration.
 
 
-Arguments of ``decoratewith`` are evaluated at runtime as ``self`` properties:
-accordingly a dynamic decorator can be, for example, a method of a component
-class. In case of dynamic decoration from a sub-instance of self, the instance
-object of the decorated method is passed to the decorator as argument
-``decorated_self``, as shown below:
+Arguments of ``decoratewith`` are evaluated at runtime as properties of the
+variable 'self': a dynamic decorator can be, for example, a method of a
+component class. In case of dynamic decoration from a sub-instance of 'self',
+the instance object of the decorated method is passed to the decorator as the
+argument ``decorated_self``, as shown below:
 
 .. code:: python
 
@@ -219,14 +218,14 @@ object of the decorated method is passed to the decorator as argument
 Safezone Context Manager
 ------------------------
 
-Any function or method (including dynamic methods) can be invoked from a
-``safezone`` context manager to suppress the possible exceptions (raised if the
-function or method is missing at runtime), and optionally to call a fallback
-function/method. If no function name is passed as argument of the context
-manager, each function in the safe zone is protected; if any function name(s) is
-passed, the protection is restricted to the functions having that/those name(s).
-For example, ``safezone`` can be used to safely call functions that may or may
-not be missing:
+Any function or method that may or may not exist at runtime (e.g., methods of
+merged classes) can be invoked from Context Manager ``safezone`` in order to
+suppress the possible exceptions raised if the function or method is missing.
+Optionally, a fallback function/method can be also passed. If no function
+name(s) is passed as argument of ``safezone``, then each function in the safe zone's
+code is protected; if any function name(s) is passed, the protection is
+restricted to the functions having that/those name(s). For example, ``safezone``
+can be used to safely call functions that may or may not be missing:
 
 .. code:: python
 
@@ -331,7 +330,8 @@ Singleton classes may be swiftly created and destroyed:
 Importing classes dynamically
 -----------------------------
 
-Classes can be imported dynamically as shown below:
+Classes can be imported dynamically using the package/class names or the path in
+dot-notation as shown below:
 
 .. code:: python
 
@@ -349,4 +349,4 @@ To run the tests using your default python:
 ::
 
     pip install -U pytest
-    pytest tests/
+    python3 -m pytest test

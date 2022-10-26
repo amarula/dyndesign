@@ -1,7 +1,4 @@
-"""Classmerger v. 1.0.05 .
-
-Merge a base class with one or more extension classes.
-"""
+"""Merge a base class with one or more extension classes."""
 
 from typing import Any, Callable, Dict, List, Tuple, Type
 from collections import deque

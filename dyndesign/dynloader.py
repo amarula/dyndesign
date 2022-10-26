@@ -1,7 +1,4 @@
-"""Dynloader v. 1.0.05
-
-Toolset for class dynamic loading.
-"""
+"""Import dynamically a class."""
 
 from typing import Type
 
