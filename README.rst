@@ -1,7 +1,7 @@
 DynDesign
 =========
 
-A set of tools to dynamically design patterns in Python.
+A set of tools for Dynamic Design Patterns in Python.
 
 
 Install
@@ -25,7 +25,7 @@ Merge two or more classes:
 
     MergedClass = mergeclasses(Base, Ext1, Ext2, ...)
 
-Decorate a method easily with one or more instance methods:
+Decorate a method with one or more instance methods loaded at runtime:
 
 .. code:: python
 
@@ -35,7 +35,7 @@ Decorate a method easily with one or more instance methods:
     def decorated_method(self, ...):
         ...
 
-Safely invoke functions or methods from the Context Manager ``safezone``:
+Safely invoke functions or methods from a ``safezone`` context manager:
 
 .. code:: python
 
@@ -88,22 +88,22 @@ similarly to what happens when merging dictionaries.
             self.param = init_value
 
         def m1(self):
-            print(f"I'm method `m1` of class `Base`, and {self.param=}")
+            print(f"Method `m1` of class `Base`, and {self.param=}")
 
         def m2(self):
-            print(f"I'm method `m2` of class `Base`")
+            print(f"Method `m2` of class `Base`")
 
     class Ext:
         def m1(self):
-            print(f"I'm method `m1` of class `Ext`, and {self.param=}")
+            print(f"Method `m1` of class `Ext`, and {self.param=}")
 
     MergedClass = mergeclasses(Base, Ext)
     merged_instance = MergedClass("INITIAL VALUE")
     merged_instance.m1()
     merged_instance.m2()
 
-    # I'm method `m1` of class `Ext`, and self.param='INITIAL VALUE'
-    # I'm method `m2` of class `Base`
+    # Method `m1` of class `Ext`, and self.param='INITIAL VALUE'
+    # Method `m2` of class `Base`
 
 
 When a merged class is instantiated with arguments, the constructor of each
@@ -156,7 +156,7 @@ class with a method from an extension class:
     class Base:
         @decoratewith("decorator")
         def m(self):
-            print(f"I'm method `m` of class `Base`")
+            print(f"Method `m` of class `Base`")
 
     class Ext:
         def decorator(self, func):
@@ -168,15 +168,18 @@ class with a method from an extension class:
     merged.m()
 
     # Beginning of method decoration.
-    # I'm method `m` of class `Base`
+    # Method `m` of class `Base`
     # End of method decoration.
 
 
-Arguments of ``decoratewith`` are evaluated at runtime as properties of the
+Arguments of ``decoratewith`` are loaded at runtime as properties of the
 variable 'self': a dynamic decorator can be, for example, a method of a
 component class. In case of dynamic decoration from a sub-instance of 'self',
 the instance object of the decorated method is passed to the decorator as the
-argument ``decorated_self``, as shown below:
+argument ``decorated_self``. If a dynamic decorator is not found at runtime
+(e.g., because it is a method of an optional class that has not been merged),
+then the code execution proceeds normally, as shown below with the decorator
+``non_existent_decorator``:
 
 .. code:: python
 
@@ -186,9 +189,9 @@ argument ``decorated_self``, as shown below:
         def __init__(self):
             self.comp = Component()
 
-        @decoratewith("comp.decorator1", "comp.decorator2")
+        @decoratewith("comp.decorator1", "comp.decorator2", "non_existent_decorator")
         def m(self):
-            print("I'm method `m` of class `Base`")
+            print("Method `m` of class `Base`")
 
     class Component:
         def __init__(self):
@@ -210,7 +213,7 @@ argument ``decorated_self``, as shown below:
 
     # Beginning of method decoration #1 (self.value='Initial')
     # Beginning of method decoration #2 (self.value='Processed')
-    # I'm method `m` of class `Base`
+    # Method `m` of class `Base`
     # End of method decoration #2
     # End of method decoration #1
 
@@ -232,17 +235,17 @@ can be used to safely call functions that may or may not be missing:
     from dyndesign import safezone
     
     def fallback():
-        print("I'm the fallback function")
+        print("Fallback function")
 
     def function_a():
-        print("I'm function `a`")
+        print("Function `a`")
 
     with safezone(fallback=fallback):
         function_a()
         non_existent_function()
 
-    # I'm function `a`
-    # I'm the fallback function
+    # Function `a`
+    # Fallback function
 
 
 A further example shows that ``safezone`` can be used to safely invoke methods
@@ -254,26 +257,26 @@ of classes that may or may not be merged with other classes:
 
     class Base:
         def fallback(self):
-            print("I'm the fallback method")
+            print("Fallback method")
 
         def m(self, class_desc):
-            print(f"I'm method `m` of {class_desc}")
+            print(f"Method `m` of {class_desc}")
             with safezone("optional_method", fallback=self.fallback):
                 self.optional_method()
 
     class ExtOptional:
         def optional_method(self):
-            print("I'm the optional method from class `ExtOptional`")
+            print("Optional method from class `ExtOptional`")
 
     merged = mergeclasses(Base, ExtOptional)()
     merged.m("merged class")
     base = Base()
     base.m("class `Base` standalone")
 
-    # I'm method `m` of merged class
-    # I'm the optional method from class `ExtOptional`
-    # I'm method `m` of class `Base` standalone
-    # I'm the fallback method
+    # Method `m` of merged class
+    # Optional method from class `ExtOptional`
+    # Method `m` of class `Base` standalone
+    # Fallback method
 
 
 Invoking methods safely
@@ -290,7 +293,7 @@ of class ``Base`` of the example above can be replaced as follows:
     ...
 
         def m(self, class_desc):
-            print(f"I'm method `m` of {class_desc}")
+            print(f"Method `m` of {class_desc}")
             safeinvoke("optional_method", self, fallback=self.fallback)
 
 
