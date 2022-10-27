@@ -2,6 +2,8 @@
 
 from typing import Type
 
+__all__ = ["importclass"]
+
 
 def importclass(
     module_name: str,

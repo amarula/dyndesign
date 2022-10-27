@@ -6,6 +6,8 @@ import inspect
 
 from dyndesign.dynloader import importclass
 
+__all__ = ["mergeclasses"]
+
 
 def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
     """Filter `args` and `kwargs` based and the arguments accepted by an input function.

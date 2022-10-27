@@ -2,6 +2,8 @@
 
 from typing import Any
 
+__all__ = ["SingletonMeta"]
+
 
 class SingletonMeta(type):
     """Meta class to instantiate Singleton classes."""
