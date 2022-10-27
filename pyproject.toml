@@ -4,6 +4,7 @@ version = "0.9.0"
 description = "Toolset for Dynamic Design Patterns in Python."
 authors = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
 maintainers = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
+repository = "https://github.com/amarula/dyndesign"
 license = "MIT"
 readme = "README.rst"
 keywords = ["design", "pattern", "dynamic", "decorator", "inheritance"]
