@@ -360,7 +360,7 @@ To run the tests using your default python:
 
 .. |Build Status| image:: https://github.com/amarula/dyndesign/actions/workflows/python-app.yml/badge.svg
     :target: https://github.com/amarula/dyndesign/actions
-.. |Python Version Status| image:: https://img.shields.io/badge/python-3.8_3.9_3.10-blue.svg
+.. |Python Version Status| image:: https://img.shields.io/badge/python-3.8_3.9_3.10_3.11-blue.svg
     :target: https://github.com/amarula/dyndesign/actions
 .. |PyPi Version Status| image:: https://badge.fury.io/py/dyndesign.svg
     :target: https://badge.fury.io/py/dyndesign
