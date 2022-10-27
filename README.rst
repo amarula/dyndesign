@@ -1,6 +1,8 @@
 DynDesign
 =========
 
+|Build Status| |PyPi Version Status| |Python Version Status| |License|
+
 A set of tools for Dynamic Design Patterns in Python.
 
 
@@ -46,7 +48,7 @@ Safely invoke functions or methods from a ``safezone`` context manager:
         function_possibly_non_existent()
         ...
 
-Create and destroy Singleton classes
+Create and destroy Singleton classes:
 
 .. code:: python
 
@@ -223,12 +225,13 @@ Safezone Context Manager
 
 Any function or method that may or may not exist at runtime (e.g., methods of
 merged classes) can be invoked from Context Manager ``safezone`` in order to
-suppress the possible exceptions raised if the function or method is missing.
-Optionally, a fallback function/method can be also passed. If no function
-name(s) is passed as argument of ``safezone``, then each function in the safe zone's
-code is protected; if any function name(s) is passed, the protection is
-restricted to the functions having that/those name(s). For example, ``safezone``
-can be used to safely call functions that may or may not be missing:
+suppress the possible exceptions raised if the function or method is not found
+at runtime. Optionally, a fallback function/method can be also passed. If no
+function name(s) is passed as argument of ``safezone``, then each function in
+the safe zone's code is protected; if any function name(s) is passed, the
+protection is restricted to the functions having that/those name(s). For
+example, ``safezone`` can be used to safely call functions that may or may not
+exist at runtime:
 
 .. code:: python
 
@@ -283,8 +286,8 @@ Invoking methods safely
 -----------------------
 
 As alternative to ``safezone`` context manager, ``safeinvoke`` can be used to
-safely invoke methods that may or may not be missing. To this end, method ``m``
-of class ``Base`` of the example above can be replaced as follows:
+safely invoke methods that may or may not exist at runtime. To this end, method
+``m`` of class ``Base`` of the example above can be replaced as follows:
 
 .. code:: python
 
@@ -300,7 +303,7 @@ of class ``Base`` of the example above can be replaced as follows:
 Singleton classes
 -----------------
 
-Singleton classes may be swiftly created and destroyed:
+Singleton classes can be swiftly created and destroyed:
 
 .. code:: python
 
@@ -353,3 +356,13 @@ To run the tests using your default python:
 
     pip install -U pytest
     python3 -m pytest test
+
+
+.. |Build Status| image:: https://github.com/amarula/dyndesign/actions/workflows/python-app.yml/badge.svg
+    :target: https://github.com/amarula/dyndesign/actions
+.. |Python Version Status| image:: https://img.shields.io/badge/python-3.8_3.9_3.10-blue.svg
+    :target: https://github.com/amarula/dyndesign/actions
+.. |PyPi Version Status| image:: https://badge.fury.io/py/dyndesign.svg
+    :target: https://badge.fury.io/py/dyndesign
+.. |License| image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
