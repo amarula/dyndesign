@@ -11,7 +11,7 @@ class SingletonMeta(type):
     _instances: Any = {}
 
     def __new__(cls, name, bases, dct) -> type:
-        """Add the class method `destroy` to the Singleton class."""
+        """Add the class method `destroy_singleton` to the Singleton class."""
         def __destroy_singleton(_):
             cls.destroy(name)
         instance = super().__new__(cls, name, bases, dct)
