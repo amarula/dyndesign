@@ -135,7 +135,7 @@ def test_merge_singleton_class_destroy():
     """Class `I` is merged with dynamically-loaded singleton class `A`, and the merged class is correctly destroyed."""
     merged_class = mergeclasses(I, "tests.sample_singletons.A")
     merged_class(cmr.CLASS_F_SING__P1)
-    merged_class.destroy()
+    merged_class().destroy_singleton()
     merged_instance = merged_class()
     assert 'param1' not in dir(merged_instance), "Error destroying singleton `A`"
     assert merged_instance.m1() == cmr.CLASS_I__M1, "Error calling method `m1`"

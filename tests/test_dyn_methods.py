@@ -47,7 +47,8 @@ def test_context_manager_suppress_exceptions_when_method_not_loaded():
 
 
 def test_context_manager_suppress_exceptions_when_function_not_found(capsys):
-    """A function `does_not_exist` is invoked from a .
+    """A non-existent function `does_not_exist` is invoked from a safe zone context manager, and the fallback function
+    is correctly executed.
     """
     def fallback():
         print(int(cdr.MISSING_FUNCTION_RES))

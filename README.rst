@@ -59,7 +59,7 @@ Create and destroy Singleton classes:
 
     singleton_instance = Singleton(...)
     same_singleton_instance = Singleton()
-    Singleton.destroy()
+    Singleton().destroy_singleton()
     new_singleton_instance = Singleton(...)
 
 Import classes dynamically using the path:
@@ -322,7 +322,7 @@ Singleton classes can be swiftly created and destroyed:
     s_A.where_points("s_A")
     s_B = Singleton()
     s_B.where_points("s_B")
-    Singleton.destroy()
+    Singleton().destroy_singleton()
     s_C = Singleton("second")
     s_C.where_points("s_C")
 
@@ -331,6 +331,17 @@ Singleton classes can be swiftly created and destroyed:
     # Object `s_B` points to the first instance
     # Created a second instance of `Singleton`
     # Object `s_C` points to the second instance
+
+The class method ``destroy`` of SingletonMeta can be invoked to destroy the
+Singleton classes all at once. As a further alternative to the instance call
+``Singleton().destroy_singleton()``, the names of the Singleton classes to
+destroy can be passed to the class method ``destroy``:
+
+.. code:: python
+
+    Singleton().destroy_singleton()
+    SingletonMeta.destroy()
+    SingletonMeta.destroy('Singleton1', 'Singleton2', 'Singleton3')
 
 
 Importing classes dynamically

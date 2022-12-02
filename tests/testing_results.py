@@ -53,3 +53,4 @@ class DynamicMethodsResults(IntEnum):
 
 class SingletonsResults(IntEnum):
     CLASS_A__P1 = auto()
+    CLASS_B__P1 = auto()
