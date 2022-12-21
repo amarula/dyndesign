@@ -77,9 +77,10 @@ Merging Classes
 Dyndesign provides API ``mergeclasses`` to merge two or more classes as if they
 were dictionaries, so that the merged class has the attributes and methods of
 the base class and of the extension classes. If two or more classes have the
-same attributes/methods, the attributes/methods of the rightmost classes (in the
-order in which they are passed to ``mergeclasses``) overwrite the leftmost,
-similarly to what happens when merging dictionaries.
+same attributes/methods, the attributes/methods from the rightmost classes (in
+the order in which the classes are passed to ``mergeclasses``) overload the
+ones from the leftmost classes, similarly to what happens when merging
+dictionaries.
 
 .. code:: python
 
@@ -109,12 +110,11 @@ similarly to what happens when merging dictionaries.
 
 
 When a merged class is instantiated with arguments, the constructor of each
-merging class takes just the arguments it needs (i.e., the arguments in its
-signature):
+merging class is invoked, since constructors are excluded from being overloaded.
+Also, each constructor takes just the arguments it requires (i.e., the arguments
+in its signature), and no exception is raised for the exceeding arguments passed:
 
 .. code:: python
-
-    from dyndesign import mergeclasses
 
     class A:
         def __init__(self):
@@ -141,6 +141,28 @@ signature):
     # Argument kw2='kwarg #2' passed to class `D`
 
 
+It is also possible to extend the same behavior of the constructors (i.e., to be
+excluded from being overloaded by the same name method from the rightmost class)
+to other methods, which can be specified in the ``exclude_overload`` argument of
+``mergeclasses``.
+
+.. code:: python
+
+    class E:
+        def method(self):
+            print("No argument passed to `method` of class `E`")
+
+    class F:
+        def method(self, a):
+            print(f"Argument {a=} passed to `method` of class `F`")
+
+    MergedClass = mergeclasses(E, F, exclude_overload=["method"])
+    MergedClass().method("Alpha")
+
+    # No argument passed to `method` of class `E`
+    # Argument a='Alpha' passed to `method` of class `F`
+
+
 Dynamic Decorators
 ------------------
 
@@ -148,8 +170,8 @@ Meta decorator ``decoratewith`` decorates a class method with one or more
 pipelined instance decorators (regardless whether they statically exist or not).
 The syntax of the dynamic decorators aims to get rid of the boilerplate for
 wrapping and returning the decorator code, leaving just the wrapper's code. For
-example, dynamic decorators can be used to decorate a method from a base
-class with a method from an extension class:
+example, dynamic decorators can be used to decorate a method from a base class
+with a method from an extension class:
 
 .. code:: python
 
@@ -184,8 +206,6 @@ then the code execution proceeds normally, as shown below with the decorator
 ``non_existent_decorator``:
 
 .. code:: python
-
-    from dyndesign import decoratewith
 
     class Base:
         def __init__(self):
@@ -256,8 +276,6 @@ of classes that may or may not be merged with other classes:
 
 .. code:: python
 
-    from dyndesign import safezone
-
     class Base:
         def fallback(self):
             print("Fallback method")
@@ -303,7 +321,8 @@ safely invoke methods that may or may not exist at runtime. To this end, method
 Singleton classes
 -----------------
 
-Singleton classes can be swiftly created and destroyed:
+Singleton classes can be swiftly created and destroyed with
+``destroy_singleton``:
 
 .. code:: python
 
@@ -332,16 +351,16 @@ Singleton classes can be swiftly created and destroyed:
     # Created a second instance of `Singleton`
     # Object `s_C` points to the second instance
 
-The class method ``destroy`` of SingletonMeta can be invoked to destroy the
-Singleton classes all at once. As a further alternative to the instance call
-``Singleton().destroy_singleton()``, the names of the Singleton classes to
-destroy can be passed to the class method ``destroy``:
+The class method ``destroy`` of SingletonMeta can be invoked to destroy all the
+Singleton classes at once. As a further alternative to the instance call
+``destroy_singleton``, the names of the Singleton classes to destroy can be
+passed to the class method ``destroy``:
 
 .. code:: python
 
-    Singleton().destroy_singleton()
-    SingletonMeta.destroy()
-    SingletonMeta.destroy('Singleton1', 'Singleton2', 'Singleton3')
+    Singleton().destroy_singleton() # Destroy only `Singleton`
+    SingletonMeta.destroy() # Destroy all the singleton classes
+    SingletonMeta.destroy('Singleton1', 'Singleton2', 'Singleton3') # Destroy selectively
 
 
 Importing classes dynamically

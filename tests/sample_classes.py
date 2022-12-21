@@ -1,3 +1,4 @@
+from dyndesign import decoratewith
 from .testing_results import ClassMergeResults as cmr
 
 
@@ -84,12 +85,42 @@ class H:
         self.a2 = param_2
         self.a3 = kwonly_2
 
-
     def m2(self):
         return cmr.CLASS_H__M2
 
 
 class I:
-
     def m1(self):
         return cmr.CLASS_I__M1
+
+
+class J:
+    def m1(self):
+        self.a1 = cmr.CLASS_J__A1
+
+
+class K:
+    def m1(self):
+        self.a2 = cmr.CLASS_K__A2
+
+
+class L:
+    def d1(self, func):
+        self.a1 = cmr.CLASS_L__A1
+        return func(self)
+
+
+class M:
+    def d1(self, func):
+        self.a2 = cmr.CLASS_M__A2
+        return func(self)
+
+
+class N:
+    def __init__(self):
+        self.a3 = [cmr.CLASS_N__LIST]
+
+    @decoratewith("d1")
+    def m1(self):
+        self.a3 += [cmr.CLASS_N__LIST]
+        return self.a3

@@ -9,6 +9,9 @@ from dyndesign.dynloader import importclass
 __all__ = ["mergeclasses"]
 
 
+DECORATED_STACK_FUNCTION_NAME = 'dynamic_decorator_func'
+
+
 def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
     """Filter `args` and `kwargs` based and the arguments accepted by an input function.
 
@@ -40,50 +43,74 @@ def __adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
     return res_args, res_kwargs
 
 
-def __merge_class_inits(classes: List[Type]) -> Callable:
-    """Build a merged constructor by calling the constructors of the merged classes.
+def __is_method_used_as_decorator(*args) -> bool:
+    """Detect whether a method is used as a decorator via `decoratewith` or not.
+
+    :param args: input arguments.
+    :return: True if the method is used as a decorator, False otherwise.
+    """
+    try:
+        return (
+            callable(args[0]) and
+            next((True for s in inspect.stack() if s.function == DECORATED_STACK_FUNCTION_NAME), False)
+        )
+    except IndexError:
+        return False
+
+
+def __merge_not_overloaded(classes: List[Type], method: str) -> Callable:
+    """Build a merged method by calling all the same-name method instances from the merged classes. If the method is
+    used as a decorator (via `decoratewith`), then the wrapped function is invoked only by the first instance of the
+    decorator. The following instances are passed a dummy lambda function as wrapped function, where the lambda returns
+    the same value returned by the first instance.
 
     :param classes: merged classes.
-    :return: merged constructor.
+    :param method: name of the method to be merged.
+    :return: merged method.
     """
-    class_constructors = []
-    for cur_class in classes:
-        if '__init__' in dir(cur_class):
-            class_constructors.append(cur_class.__init__)
+    method_instances = [getattr(cur_class, method) for cur_class in classes if method in dir(cur_class)]
 
-    def init_all_classes(obj, *args, **kwargs):
-        for class_constructor in class_constructors:
-            if not inspect.ismethoddescriptor(class_constructor):
-                filtered_args, filtered_kwargs = __adapt_arguments(class_constructor, *args, **kwargs)
-                class_constructor(obj, *filtered_args, **filtered_kwargs)
+    def call_all_method_instances(obj, *args, **kwargs):
+        decorator_executed_once = False
+        method_used_as_decorator = __is_method_used_as_decorator(*args)
+        returned_value = None
+        for method_instance in method_instances:
+            if not inspect.ismethoddescriptor(method_instance):
+                filtered_args, filtered_kwargs = __adapt_arguments(method_instance, *args, **kwargs)
+                if decorator_executed_once:
+                    filtered_args = (lambda *_: returned_value, *filtered_args[1:])
+                returned_value = method_instance(obj, *filtered_args, **filtered_kwargs)
+                if method_used_as_decorator:
+                    decorator_executed_once = True
+        return returned_value
 
-    return init_all_classes
+    return call_all_method_instances
 
 
 def __preprocess_classes(all_classes: Any) -> List[Type]:
     """Dynamically import classes if passed as strings."""
-    result_classes = []
-    for class_id in all_classes:
-        if type(class_id) == str:
-            cl = importclass(class_id)
-        else:
-            cl = class_id
-        result_classes.append(cl)
-    return result_classes
+    return [importclass(class_id) if type(class_id) == str else class_id for class_id in all_classes]
 
 
-def mergeclasses(base_class: Any, *extension_classes: Any) -> Type:
-    """Merge (i.e., extend) a base class with one or more extension classes. If more than one adapter classes are
+def mergeclasses(base_class: Any,
+    *extension_classes: Any,
+    exclude_overload: List[str] = None # type: ignore
+) -> Type:
+    """Merge (i.e., extend) a base class with one or more extension classes. If more than one extension classes are
     provided, then the classes are extended in sequence (from the first one to the last).
 
     :param base_class: base class.
     :param extension_classes: extension classes.
+    :param exclude_overload: list of methods (in addition to `__init__`) whose instances from all the merged classes
+                             (if present) are invoked, rather than being overloaded by the instance from the rightmost
+                             class.
     :return: merged class.
     """
     all_classes = __preprocess_classes((base_class,) + extension_classes)
-    init_all_classes = __merge_class_inits(all_classes)
+    exclude_overload = ["__init__"] + (exclude_overload or [])
+    methods_not_oveloaded = {method: __merge_not_overloaded(all_classes, method) for method in exclude_overload}
     return type(
         all_classes[0].__name__,
         tuple(all_classes[::-1]),
-        {"__init__": init_all_classes}
+        methods_not_oveloaded
     )

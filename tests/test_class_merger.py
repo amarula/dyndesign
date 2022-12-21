@@ -139,3 +139,25 @@ def test_merge_singleton_class_destroy():
     merged_instance = merged_class()
     assert 'param1' not in dir(merged_instance), "Error destroying singleton `A`"
     assert merged_instance.m1() == cmr.CLASS_I__M1, "Error calling method `m1`"
+
+
+def test_merge_overload_exclude():
+    """Class `J` is merged with class `K`, and method `m1` is called for both the classes rather than being overloaded.
+    """
+    merged_class = mergeclasses(J, K, exclude_overload=["m1"])
+    merged_instance = merged_class()
+    merged_instance.m1()
+    assert merged_instance.a1 == cmr.CLASS_J__A1, "Error calling method `J.m1`"
+    assert merged_instance.a2 == cmr.CLASS_K__A2, "Error calling method `K.m1`"
+
+
+def test_merge_overload_exclude_decorators():
+    """Class `L` is merged with classes `M` and `N`, and decorators `d1` of method `m1` are called in both the classes
+    `L` and `M` rather than being overloaded. Nevertheless, decorated method `m1` from class `N` is called only once.
+    """
+    merged_class = mergeclasses(L, M, N, exclude_overload=["d1"])
+    merged_instance = merged_class()
+    assert merged_instance.m1() == [cmr.CLASS_N__LIST, cmr.CLASS_N__LIST], ("Error: decorated method `m1` executed "
+        "more than once.")
+    assert merged_instance.a1 == cmr.CLASS_L__A1, "Error calling decorator `L.d1`"
+    assert merged_instance.a2 == cmr.CLASS_M__A2, "Error calling decorator `M.d1`"
