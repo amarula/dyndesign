@@ -141,23 +141,56 @@ def test_merge_singleton_class_destroy():
     assert merged_instance.m1() == cmr.CLASS_I__M1, "Error calling method `m1`"
 
 
-def test_merge_overload_exclude():
+def test_merge_invoke_all():
     """Class `J` is merged with class `K`, and method `m1` is called for both the classes rather than being overloaded.
     """
-    merged_class = mergeclasses(J, K, exclude_overload=["m1"])
+    merged_class = mergeclasses(J, K, invoke_all=["m1"])
     merged_instance = merged_class()
     merged_instance.m1()
     assert merged_instance.a1 == cmr.CLASS_J__A1, "Error calling method `J.m1`"
     assert merged_instance.a2 == cmr.CLASS_K__A2, "Error calling method `K.m1`"
 
 
-def test_merge_overload_exclude_decorators():
-    """Class `L` is merged with classes `M` and `N`, and decorators `d1` of method `m1` are called in both the classes
-    `L` and `M` rather than being overloaded. Nevertheless, decorated method `m1` from class `N` is called only once.
+def test_merge_invoke_all_decorators():
+    """Class `L` is merged with classes `M` and `N`, and decorators `d1` of method `N.m1` are called from both the
+    classes `L` and `M` rather than being overloaded. Nevertheless, a double invocation to the decorated method `N.m1`
+    (from the two instances of decorators) is prevented.
     """
-    merged_class = mergeclasses(L, M, N, exclude_overload=["d1"])
+    merged_class = mergeclasses(L, M, N, invoke_all=["d1"])
     merged_instance = merged_class()
-    assert merged_instance.m1() == [cmr.CLASS_N__LIST, cmr.CLASS_N__LIST], ("Error: decorated method `m1` executed "
-        "more than once.")
+    assert merged_instance.m1() == [cmr.CLASS_N__ITEM_1, cmr.CLASS_N__ITEM_1], ("Error: decorated method `m1` executed"
+        " more than once.")
     assert merged_instance.a1 == cmr.CLASS_L__A1, "Error calling decorator `L.d1`"
     assert merged_instance.a2 == cmr.CLASS_M__A2, "Error calling decorator `M.d1`"
+
+
+def test_merge_invoke_all_decorators_in_pipeline():
+    """Class `L` is merged with classes `M` and `O`, and decorators `d2` of method `O.m1` are called from all the
+    classes `L`, `M` and `O` following the order in which the classes are merged.
+    """
+    merged_class = mergeclasses(L, M, O, invoke_all=["d2"])
+    merged_instance = merged_class()
+    assert merged_instance.m1([]) == [
+        cmr.CLASS_L__ITEM_1,
+        cmr.CLASS_M__ITEM_1,
+        cmr.CLASS_O__ITEM_1,
+        cmr.CLASS_O__ITEM_2,
+        cmr.CLASS_O__ITEM_3,
+        cmr.CLASS_M__ITEM_2,
+        cmr.CLASS_L__ITEM_2,
+    ], ("Error calling decorator pipeline.")
+
+
+def test_merge_invoke_all_decorators_with_different_args():
+    """Class `P` is merged with class `L`, and decorators `d2` of method `P.m1` are called from both the classes `P`
+    and `L`. Decorator arguments are adapted to each signature of decorator instance, as decorator `P.d2` accepts the
+    arguments `param_1, param_2` while decorator `L.d2` accepts `param_1` only.
+    """
+    merged_class = mergeclasses(P, L, invoke_all=["d2"])
+    merged_instance = merged_class()
+    assert merged_instance.m1([], cmr.CLASS_P__P2) == [
+        cmr.CLASS_P__P2,
+        cmr.CLASS_L__ITEM_1,
+        cmr.CLASS_P__ITEM_1,
+        cmr.CLASS_L__ITEM_2,
+    ], ("Error calling decorator pipeline.")

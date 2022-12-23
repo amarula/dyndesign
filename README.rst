@@ -111,8 +111,9 @@ dictionaries.
 
 When a merged class is instantiated with arguments, the constructor of each
 merging class is invoked, since constructors are excluded from being overloaded.
-Also, each constructor takes just the arguments it requires (i.e., the arguments
-in its signature), and no exception is raised for the exceeding arguments passed:
+Also, arguments passed to each constructor are adaptively filtered based on the
+constructor signature so that each constructor takes just the arguments it
+requires, and no exception is raised for the exceeding arguments passed:
 
 .. code:: python
 
@@ -141,10 +142,12 @@ in its signature), and no exception is raised for the exceeding arguments passed
     # Argument kw2='kwarg #2' passed to class `D`
 
 
-It is also possible to extend the same behavior of the constructors (i.e., to be
-excluded from being overloaded by the same name method from the rightmost class)
-to other methods, which can be specified in the ``exclude_overload`` argument of
-``mergeclasses``.
+It is also possible to extend the same behavior of the constructor ``__init__``
+(i.e., all the methods from all the merged classes are invoked rather than being
+overloaded by the same name method from the rightmost class) to other methods. A
+list of method names whose instances have to be all invoked can be specified in
+the ``invoke_all`` argument of ``mergeclasses``. Adaptive filtering of the
+arguments of the method instances is performed as well.
 
 .. code:: python
 
@@ -156,7 +159,7 @@ to other methods, which can be specified in the ``exclude_overload`` argument of
         def method(self, a):
             print(f"Argument {a=} passed to `method` of class `F`")
 
-    MergedClass = mergeclasses(E, F, exclude_overload=["method"])
+    MergedClass = mergeclasses(E, F, invoke_all=["method"])
     MergedClass().method("Alpha")
 
     # No argument passed to `method` of class `E`
@@ -184,16 +187,37 @@ with a method from an extension class:
 
     class Ext:
         def decorator(self, func):
-            print("Beginning of method decoration.")
+            print("Beginning of method decoration from Ext.")
             func(self)
-            print("End of method decoration.")
+            print("End of method decoration from Ext.")
 
     merged = mergeclasses(Base, Ext)()
     merged.m()
 
-    # Beginning of method decoration.
+    # Beginning of method decoration from Ext.
     # Method `m` of class `Base`
-    # End of method decoration.
+    # End of method decoration from Ext.
+
+If a decorator name is passed in the ``invoke_all`` argument of
+``mergeclasses``, then multiple decorator instances with the same name from
+different extension classes may be used in pipeline:
+
+.. code:: python
+
+    class Ext2:
+        def decorator(self, func):
+            print("Beginning of method decoration from Ext2.")
+            func(self)
+            print("End of method decoration from Ext2.")
+
+    merged = mergeclasses(Base, Ext, Ext2, invoke_all=["decorator"])()
+    merged.m()
+
+    # Beginning of method decoration from Ext.
+    # Beginning of method decoration from Ext2.
+    # Method `m` of class `Base`
+    # End of method decoration from Ext2.
+    # End of method decoration from Ext.
 
 
 Arguments of ``decoratewith`` are loaded at runtime as properties of the

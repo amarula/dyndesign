@@ -109,18 +109,55 @@ class L:
         self.a1 = cmr.CLASS_L__A1
         return func(self)
 
+    def d2(self, func, param_1):
+        param_1.append(cmr.CLASS_L__ITEM_1)
+        func(self, param_1)
+        param_1.append(cmr.CLASS_L__ITEM_2)
+        return param_1
+
 
 class M:
     def d1(self, func):
         self.a2 = cmr.CLASS_M__A2
         return func(self)
 
+    def d2(self, func, param_1):
+        param_1.append(cmr.CLASS_M__ITEM_1)
+        func(self, param_1)
+        param_1.append(cmr.CLASS_M__ITEM_2)
+        return param_1
+
 
 class N:
     def __init__(self):
-        self.a3 = [cmr.CLASS_N__LIST]
+        self.a3 = [cmr.CLASS_N__ITEM_1]
 
     @decoratewith("d1")
     def m1(self):
-        self.a3 += [cmr.CLASS_N__LIST]
+        self.a3 += [cmr.CLASS_N__ITEM_1]
         return self.a3
+
+
+class O:
+    @decoratewith("d2")
+    def m1(self, param_1):
+        param_1.append(cmr.CLASS_O__ITEM_2)
+        return param_1
+
+    def d2(self, func, param_1):
+        param_1.append(cmr.CLASS_O__ITEM_1)
+        func(self, param_1)
+        param_1.append(cmr.CLASS_O__ITEM_3)
+        return param_1
+
+
+class P:
+    @decoratewith("d2")
+    def m1(self, param_1):
+        param_1.append(cmr.CLASS_P__ITEM_1)
+        return param_1
+
+    def d2(self, func, param_1, param_2):
+        param_1.append(param_2)
+        func(self, param_1, param_2)
+        return param_1

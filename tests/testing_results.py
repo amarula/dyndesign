@@ -29,8 +29,17 @@ class ClassMergeResults(IntEnum):
     CLASS_J__A1 = auto()
     CLASS_K__A2 = auto()
     CLASS_L__A1 = auto()
+    CLASS_L__ITEM_1 = auto()
+    CLASS_L__ITEM_2 = auto()
     CLASS_M__A2 = auto()
-    CLASS_N__LIST = auto()
+    CLASS_M__ITEM_1 = auto()
+    CLASS_M__ITEM_2 = auto()
+    CLASS_N__ITEM_1 = auto()
+    CLASS_O__ITEM_1 = auto()
+    CLASS_O__ITEM_2 = auto()
+    CLASS_O__ITEM_3 = auto()
+    CLASS_P__ITEM_1 = auto()
+    CLASS_P__P2 = auto()
 
 
 class DynamicMethodsResults(IntEnum):
