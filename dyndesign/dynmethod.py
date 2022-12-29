@@ -4,7 +4,7 @@ from contextlib import AbstractContextManager
 from functools import wraps
 from operator import attrgetter
 import re
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Union
 
 __all__ = ["decoratewith", "safeinvoke", "safezone"]
 
@@ -38,14 +38,19 @@ def __try_invoke_method(
 
 def decoratewith(
     *method_name_args: str,
-    method_sub_instance: str = None,  # type: ignore
-    fallback: Callable = None  # type: ignore
+    method_sub_instance: Union[str, None] = None,
+    fallback: Union[Callable, None] = None,
+    disable_property: Union[str, None] = None
 ) -> Callable:
     """Meta decorator to decorate a function with one or more decorator methods. Decorator methods can be, for
     example, class methods, methods dynamically added and/or methods of any sub-instance of a class instance.
 
     :param method_name_args: method name(s) of the one or more decorator methods.
     :param method_sub_instance: name of the sub-instance to be prepended to each method name.
+    :param fallback: function to be invoked in case that one or more methods in `method_name_args` are not found in the
+                     instance object.
+    :param disable_property: name of a property to disable the decorator(s). If the property is found in the instance
+                             object and is True, then the wrapped function is not decorated.
     :return: method decorator.
     """
     method_names=list(method_name_args)
@@ -66,6 +71,8 @@ def decoratewith(
 
         @wraps(func)
         def dynamic_decorator_func(instance, *args, **kwargs) -> Any:
+            if disable_property and getattr(instance, disable_property, False):
+                return func(instance, *args, **kwargs)
             decorator_args = (func, ) + args
             if __is_sub_object(method_name):
                 kwargs["decorated_self"] = instance
@@ -88,7 +95,7 @@ def decoratewith(
 def safeinvoke(
     method_name: str,
     instance: object,
-    fallback: Callable = None,  # type: ignore
+    fallback: Union[Callable, None] = None,
     *args,
     **kwargs
 ) -> Any:
@@ -98,6 +105,7 @@ def safeinvoke(
     :param method_name: name of a method of the class instance or path (in dot notation) to a method of a
                         sub-instance.
     :param instance: class instance that may optionally include the method referenced to with `method_name`.
+    :param fallback: function to be invoked in case that method `method_name` is not in `instance`.
     :return: value returned by the method, if such a method exists.
     """
     try:
@@ -116,7 +124,7 @@ class safezone(AbstractContextManager):
 
     def __init__(self,
         *method_names: str,
-        fallback: Callable = None,  # type: ignore
+        fallback: Union[Callable, None] = None,
     ):
         self.__method_names = method_names
         self.__fallback = fallback

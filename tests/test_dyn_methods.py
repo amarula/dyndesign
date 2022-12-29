@@ -110,14 +110,14 @@ def test_decorator_with_method_of_parent():
 
 
 def test_decorator_with_method_of_component_class():
-    """Method `m1` of class `I` is decorated with method `d7` of the component class DM_I (dynamically imported)."""
+    """Method `m1` of class `I` is decorated with method `d7` of the component class `DM_I` (dynamically imported)."""
     instance_I = I()
     assert instance_I.m1() == (cdr.CLASS_I__M1, cdr.CLASS_I__A1), "Error calling method `m1`"
 
 
 def test_decorator_with_multiple_methods_of_component_class():
-    """Method `m1` of class `J` is decorated with methods `d8` and `d9` of the component class DM_J by passing the name
-    of the component class instance as argument `method_sub_instance` to `decoratewith`.
+    """Method `m1` of class `J` is decorated with methods `d8` and `d9` of the component class `DM_J` by passing the
+    name of the component class instance as argument `method_sub_instance` to `decoratewith`.
     """
     instance_J = J()
     assert instance_J.m1() == (
@@ -125,3 +125,14 @@ def test_decorator_with_multiple_methods_of_component_class():
         cdr.CLASS_DM_J__D9,
         cdr.CLASS_J__M1
     ), "Error calling method `m1`"
+
+
+def test_decorator_disabled_with_disable_property():
+    """Method `m1` of class `K` is decorated with method `d10` of class `L` and property name "apply_decorator" is
+    passed as `disable_property`.
+    """
+    merged_class = mergeclasses(K, L)
+    instance_K_deco = merged_class(False)
+    instance_K_no_deco = merged_class(True)
+    assert instance_K_deco.m1() == (cdr.CLASS_L__D10, cdr.CLASS_K__M1), "Error calling method `m1` with decorator"
+    assert instance_K_no_deco.m1() == cdr.CLASS_K__M1, "Error calling method `m1` without decorator"

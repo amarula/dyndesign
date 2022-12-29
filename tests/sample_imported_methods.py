@@ -91,3 +91,19 @@ class J:
     @decoratewith("d8", "d9", method_sub_instance="dm_j")
     def m1(self):
         return cdr.CLASS_J__M1
+
+
+class K:
+
+    def __init__(self, apply_decorator):
+        self.apply_decorator = apply_decorator
+
+    @decoratewith("d10", disable_property="apply_decorator")
+    def m1(self):
+        return cdr.CLASS_K__M1
+
+
+class L:
+
+    def d10(self, func):
+        return (cdr.CLASS_L__D10, func(self))

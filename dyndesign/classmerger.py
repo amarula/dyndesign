@@ -132,9 +132,10 @@ def __preprocess_classes(all_classes: Any) -> List[Type]:
     return [importclass(class_id) if type(class_id) == str else class_id for class_id in all_classes]
 
 
-def mergeclasses(base_class: Any,
+def mergeclasses(
+    base_class: Any,
     *extension_classes: Any,
-    invoke_all: List[str] = None # type: ignore
+    invoke_all: Union[List[str], None] = None
 ) -> Type:
     """Merge (i.e., extend) a base class with one or more extension classes. If more than one extension classes are
     provided, then the classes are extended in sequence following the order of `extension_classes`.

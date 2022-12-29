@@ -1,13 +1,13 @@
 """Import dynamically a class."""
 
-from typing import Type
+from typing import Type, Union
 
 __all__ = ["importclass"]
 
 
 def importclass(
     module_name: str,
-    class_name: str = None  # type: ignore
+    class_name: Union[str, None] = None
 ) -> Type:
     """Dynamically import a class from a python module.
 
