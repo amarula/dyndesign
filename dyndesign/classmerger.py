@@ -3,6 +3,7 @@
 from functools import wraps
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
 from collections import deque
+import re
 import inspect
 
 from dyndesign.dynloader import importclass
@@ -57,6 +58,18 @@ def __is_method_used_as_decorator(*args) -> bool:
         )
     except IndexError:
         return False
+
+
+def __is_missing_arguments_exception(e: Exception, method_instance: Callable) -> bool:
+    """Detect whether an exception is caused by missing positional arguments when invoking a method or not.
+
+    :param e: exception to check.
+    :param method_instance: method invoked.
+    :return: True if the exception is caused by missing positional arguments, False otherwise.
+    """
+    exception_message = e.args[0]
+    matching_regex = fr'({re.escape(method_instance.__name__)}|{re.escape(method_instance.__qualname__)})\(\) missing'
+    return re.match(matching_regex, exception_message) is not None
 
 
 def __decorator_builder(
@@ -130,7 +143,7 @@ def __merge_not_overloaded(
                     try:
                         returned_value = method_instance(obj, *filtered_args, **filtered_kwargs)
                     except TypeError as e:
-                        if strict_merged_args or not e.args[0].startswith(method_instance.__qualname__ + '() missing'):
+                        if strict_merged_args or not __is_missing_arguments_exception(e, method_instance):
                             raise e
         return returned_value
 
