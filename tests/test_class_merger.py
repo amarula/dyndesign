@@ -1,3 +1,5 @@
+import pytest
+
 from dyndesign import mergeclasses
 from .testing_results import ClassMergeResults as cmr
 from .sample_classes import *
@@ -43,7 +45,7 @@ def test_multi_merge():
 
 
 def test_merge_lambda_methods():
-    """This test case shows that class merging works also with method assigned or created dynamically. In class `D`,
+    """This test case shows that class merging works also with methods assigned or created dynamically. In class `D`,
     method `m3` is defined as an alias of `m1`, and `m2` is defined as lambda function.
     """
     merged_class = mergeclasses(D, C_child, B)
@@ -97,8 +99,37 @@ def test_merge_with_kw_only_args():
     assert merged_instance.m2() == cmr.CLASS_E__P1, "Error calling method `m2`"
 
 
+def test_merge_with_no_init_args():
+    """In this test case no initializing argument is passed to the merged class. As a result, the constructor of class
+    `F`, which requires 2 positional parameters, is skipped. Instead, the constructor of class `B` is initialized with
+    no arguments according to its signature.
+    """
+    merged_class = mergeclasses(F, B)
+    merged_instance = merged_class()
+    assert merged_instance.a1 == cmr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert merged_instance.a3 == cmr.CLASS_F__M2, "Error initializing attribute `a3`"
+    assert merged_instance.m1() == cmr.CLASS_B__M1, "Error overloading method `m1`"
+    assert merged_instance.m2() == cmr.CLASS_F__M2, "Error calling method `m2`"
+
+
+def test_merge_with_no_init_args_exception():
+    """This test case is similar to the previous one, but with the difference that the parameter `strict_merged_args`
+    of `merged_class` is set to `True`. As a result, a `TypeError` exception is raised.
+    """
+    merged_class = mergeclasses(F, B, strict_merged_args=True)
+    assert pytest.raises(TypeError, merged_class), "Exception `TypeError` not raised"
+
+
+def test_merge_with_no_init_args_unrelated_exception():
+    """This test case shows that a `TypeError` exception that does not arise from missing positional parameters of a
+    constructor is correctly raised.
+    """
+    merged_class = mergeclasses(F, B_exception)
+    assert pytest.raises(TypeError, merged_class), "Exception `TypeError` not raised"
+
+
 def test_merge_merged_class():
-    """This test case shows how merged class can be merged in turn with other classes. In this case, merged class
+    """This test case shows how merged classes can be merged in turn with other classes. In this case, merged class
     `merged_class` of test case `test_merge_with_kw_only_args` is merged with class `H`. Constructor of class `H`
     accepts `param_2` as positional-only argument, `option_2` as regular argument and `kwonly_2` as keyword-only
     argument.

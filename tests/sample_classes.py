@@ -24,6 +24,12 @@ class B:
         return cmr.CLASS_B__M1
 
 
+class B_exception:
+    def __init__(self):
+        # Raises a `TypeError` exception.
+        self.a1 = cmr.CLASS_B__A1 + self.m2  # type: ignore
+
+
 class B_child(B):
     def m1(self):
         return cmr.CLASS_B_CHILD__M1

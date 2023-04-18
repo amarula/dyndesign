@@ -99,12 +99,18 @@ def __merged_decorator_builder(
         return __decorator_builder(func, decorator_instance, is_last_decorator=True)
 
 
-def __merge_not_overloaded(classes: List[Type], method: str) -> Union[Callable, None]:
+def __merge_not_overloaded(
+    classes: List[Type],
+    method: str,
+    strict_merged_args: bool
+) -> Union[Callable, None]:
     """Build a merged method by calling all the same-name method instances from the merged classes. If the method is
     used as a decorator (via `decoratewith`), then all the decorator instances are merged and called in pipeline.
 
     :param classes: merged classes.
     :param method: name of the method to be merged.
+    :param strict_merged_args: whether a `TypeError` exception is raised or not in case one or more positional
+                               arguments are missing.
     :return: merged method if two or more method instances are found, None otherwise.
     """
     all_method_instances = [getattr(cur_class, method) for cur_class in classes if method in dir(cur_class)]
@@ -121,7 +127,11 @@ def __merge_not_overloaded(classes: List[Type], method: str) -> Union[Callable, 
             for method_instance in method_instances:
                 if not inspect.ismethoddescriptor(method_instance):
                     filtered_args, filtered_kwargs = __adapt_arguments(method_instance, *args, **kwargs)
-                    returned_value = method_instance(obj, *filtered_args, **filtered_kwargs)
+                    try:
+                        returned_value = method_instance(obj, *filtered_args, **filtered_kwargs)
+                    except TypeError as e:
+                        if strict_merged_args or not e.args[0].startswith(method_instance.__qualname__ + '() missing'):
+                            raise e
         return returned_value
 
     return call_all_method_instances
@@ -135,7 +145,8 @@ def __preprocess_classes(all_classes: Any) -> List[Type]:
 def mergeclasses(
     base_class: Any,
     *extension_classes: Any,
-    invoke_all: Union[List[str], None] = None
+    invoke_all: Union[List[str], None] = None,
+    strict_merged_args = False
 ) -> Type:
     """Merge (i.e., extend) a base class with one or more extension classes. If more than one extension classes are
     provided, then the classes are extended in sequence following the order of `extension_classes`.
@@ -144,12 +155,17 @@ def mergeclasses(
     :param extension_classes: extension classes.
     :param invoke_all: list of methods (in addition to `__init__`) whose instances are invoked (if present) from all
                        the merged classes, rather than being overloaded by the instance from the rightmost class.
+    :param strict_merged_args: controls whether a `TypeError` exception is raised or not in case one or more positional
+                               arguments are missing in the `invoke_all` methods. It is set to True if an exception is
+                               raised, or False if the methods are silently skipped.
     :return: merged class.
     """
     all_classes = __preprocess_classes((base_class,) + extension_classes)
     invoke_all = ["__init__"] + (invoke_all or [])
     methods_not_oveloaded = {
-        method: merged for method in invoke_all if (merged := __merge_not_overloaded(all_classes, method))
+        method: merged for method in invoke_all if (
+            merged := __merge_not_overloaded(all_classes, method, strict_merged_args)
+        )
     }
     return type(
         all_classes[0].__name__,

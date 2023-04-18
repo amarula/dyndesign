@@ -113,7 +113,7 @@ When a merged class is instantiated with arguments, the constructor of each
 merging class is invoked, since constructors are excluded from being overloaded.
 Also, arguments passed to each constructor are adaptively filtered based on the
 constructor signature so that each constructor takes just the arguments it
-requires, and no exception is raised for the exceeding arguments passed:
+requires, and no exception is raised for exceeding or missing arguments passed:
 
 .. code:: python
 
@@ -139,6 +139,11 @@ requires, and no exception is raised for the exceeding arguments passed:
     # No argument passed to class `A`
     # Argument a='Alpha' passed to class `B`
     # Argument a='Alpha', b='Beta' and kw1='kwarg #1' passed to class `C`
+    # Argument kw2='kwarg #2' passed to class `D`
+
+    MergedClass()
+
+    # No argument passed to class `A`
     # Argument kw2='kwarg #2' passed to class `D`
 
 
