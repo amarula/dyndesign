@@ -143,9 +143,10 @@ requires, and no exception is raised for exceeding arguments passed:
 
 On the other hand, if any required positional argument is missing, an exception
 is raised. If `MergedClass` of the above example is initialized with no
-parameters, and exception is raised when the constructor of class `B` is called.
+parameters, and exception is raised when the constructor of class `B` is called:
 
 .. code:: python
+
     ...
     MergedClass()
 
@@ -157,6 +158,7 @@ skipped, `strict_merged_args` can be set to False in `mergeclasses`. In the
 above example, constructors of class `B` and `C` are skipped:
 
 .. code:: python
+
     ...
     MergedClass = mergeclasses(A, B, C, D, strict_merged_args=False)
     MergedClass()
