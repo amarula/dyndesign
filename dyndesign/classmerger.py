@@ -159,7 +159,7 @@ def mergeclasses(
     base_class: Any,
     *extension_classes: Any,
     invoke_all: Union[List[str], None] = None,
-    strict_merged_args = False
+    strict_merged_args = True
 ) -> Type:
     """Merge (i.e., extend) a base class with one or more extension classes. If more than one extension classes are
     provided, then the classes are extended in sequence following the order of `extension_classes`.
@@ -169,8 +169,8 @@ def mergeclasses(
     :param invoke_all: list of methods (in addition to `__init__`) whose instances are invoked (if present) from all
                        the merged classes, rather than being overloaded by the instance from the rightmost class.
     :param strict_merged_args: controls whether a `TypeError` exception is raised or not in case one or more positional
-                               arguments are missing in the `invoke_all` methods. It is set to True if an exception is
-                               raised, or False if the methods are silently skipped.
+                               arguments are missing in the `invoke_all` methods. If it is set to True (default value)
+                               an exception is raised, otherwise methods with missing arguments are silently skipped.
     :return: merged class.
     """
     all_classes = __preprocess_classes((base_class,) + extension_classes)

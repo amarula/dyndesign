@@ -113,7 +113,7 @@ When a merged class is instantiated with arguments, the constructor of each
 merging class is invoked, since constructors are excluded from being overloaded.
 Also, arguments passed to each constructor are adaptively filtered based on the
 constructor signature so that each constructor takes just the arguments it
-requires, and no exception is raised for exceeding or missing arguments passed:
+requires, and no exception is raised for exceeding arguments passed:
 
 .. code:: python
 
@@ -141,10 +141,28 @@ requires, and no exception is raised for exceeding or missing arguments passed:
     # Argument a='Alpha', b='Beta' and kw1='kwarg #1' passed to class `C`
     # Argument kw2='kwarg #2' passed to class `D`
 
+On the other hand, if any required positional argument is missing, an exception
+is raised. If `MergedClass` of the above example is initialized with no
+parameters, and exception is raised when the constructor of class `B` is called.
+
+.. code:: python
+    ...
+    MergedClass()
+
+    # ...
+    # TypeError: B.__init__() missing 1 required positional argument: 'a'
+
+So as to have constructor instances with missing positional arguments silently
+skipped, `strict_merged_args` can be set to False in `mergeclasses`. In the
+above example, constructors of class `B` and `C` are skipped:
+
+.. code:: python
+    ...
+    MergedClass = mergeclasses(A, B, C, D, strict_merged_args=False)
     MergedClass()
 
     # No argument passed to class `A`
-    # Argument kw2='kwarg #2' passed to class `D`
+    # Argument kw2=None passed to class `D`
 
 
 It is also possible to extend the same behavior of the constructor ``__init__``
