@@ -1,0 +1,9 @@
+site_name: DynDesign
+theme:
+    name: readthedocs
+nav:
+    - Installation: install.md
+    - Overview: overview.md
+    - Documentation: documentation.md
+    - Tests: tests.md
+    - License: license.md

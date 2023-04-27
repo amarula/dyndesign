@@ -75,10 +75,10 @@ Merging Classes
 ---------------
 
 Dyndesign provides API ``mergeclasses`` to merge two or more classes as if they
-were dictionaries, so that the merged class has the attributes and methods of
-the base class and of the extension classes. If two or more classes have the
-same attributes/methods, the attributes/methods from the rightmost classes (in
-the order in which the classes are passed to ``mergeclasses``) overload the
+were dictionaries. As a result, the newly created class has the same properties
+from both its base class and any added extensions. If two or more classes have
+the same attributes/methods, the attributes/methods from the rightmost classes
+(in the order in which the classes are passed to ``mergeclasses``) overload the
 ones from the leftmost classes, similarly to what happens when merging
 dictionaries.
 
@@ -142,8 +142,9 @@ requires, and no exception is raised for exceeding arguments passed:
     # Argument kw2='kwarg #2' passed to class `D`
 
 On the other hand, if any required positional argument is missing, an exception
-is raised. If `MergedClass` of the above example is initialized with no
-parameters, and exception is raised when the constructor of class `B` is called:
+is raised. If ``MergedClass`` of the above example is initialized with no
+parameters, and exception is raised when the constructor of class ``B`` is
+called:
 
 .. code:: python
 
@@ -154,8 +155,8 @@ parameters, and exception is raised when the constructor of class `B` is called:
     # TypeError: B.__init__() missing 1 required positional argument: 'a'
 
 So as to have constructor instances with missing positional arguments silently
-skipped, `strict_merged_args` can be set to False in `mergeclasses`. In the
-above example, constructors of class `B` and `C` are skipped:
+skipped, ``strict_merged_args`` can be set to False in ``mergeclasses``. In the
+above example, constructors of class ``B`` and ``C`` are skipped:
 
 .. code:: python
 
@@ -170,7 +171,7 @@ above example, constructors of class `B` and `C` are skipped:
 It is also possible to extend the same behavior of the constructor ``__init__``
 (i.e., all the methods from all the merged classes are invoked rather than being
 overloaded by the same name method from the rightmost class) to other methods. A
-list of method names whose instances have to be all invoked can be specified in
+list of method names whose instances must be all invoked can be specified in
 the ``invoke_all`` argument of ``mergeclasses``. Adaptive filtering of the
 arguments of the method instances is performed as well.
 
@@ -194,16 +195,16 @@ arguments of the method instances is performed as well.
 Dynamic Decorators
 ------------------
 
-Meta decorator ``decoratewith`` decorates a class method with one or more
-pipelined instance decorators (regardless whether they statically exist or not).
-The syntax of the dynamic decorators aims to get rid of the boilerplate for
-wrapping and returning the decorator code, leaving just the wrapper's code. For
-example, dynamic decorators can be used to decorate a method from a base class
-with a method from an extension class:
+Meta decorator ``decoratewith`` can be used to decorate a class method with one
+or more pipelined dynamic decorators, regardless whether they statically exist
+or not. Additionally, the syntax of the dynamic decorators aims to get rid of
+the boilerplate for wrapping and returning the decorator code, leaving just the
+wrapper's code. For example, dynamic decorators can be used to decorate a method
+of a base class with a method of an extension class:
 
 .. code:: python
 
-    from dyndesign import decoratewith
+    from dyndesign import decoratewith, mergeclasses
 
     class Base:
         @decoratewith("decorator")
@@ -352,9 +353,9 @@ of classes that may or may not be merged with other classes:
 Invoking methods safely
 -----------------------
 
-As alternative to ``safezone`` context manager, ``safeinvoke`` can be used to
-safely invoke methods that may or may not exist at runtime. To this end, method
-``m`` of class ``Base`` of the example above can be replaced as follows:
+As an alternative to ``safezone`` context manager, ``safeinvoke`` API can be
+used to safely invoke methods that may or may not exist at runtime. To this end,
+method ``m`` of class ``Base`` of the example above can be replaced as follows:
 
 .. code:: python
 
@@ -370,8 +371,8 @@ safely invoke methods that may or may not exist at runtime. To this end, method
 Singleton classes
 -----------------
 
-Singleton classes can be swiftly created and destroyed with
-``destroy_singleton``:
+Singleton classes can be swiftly created with `SingletonMeta` metaclass and then
+destroyed with `destroy_singleton`:
 
 .. code:: python
 
@@ -388,15 +389,19 @@ Singleton classes can be swiftly created and destroyed with
 
     s_A = Singleton("first")
     s_A.where_points("s_A")
-    s_B = Singleton()
+
+    # Created a first instance of `Singleton`
+    # Object `s_A` points to the first instance
+
+    s_B = Singleton("second")
     s_B.where_points("s_B")
+
+    # Object `s_B` points to the first instance
+
     Singleton().destroy_singleton()
     s_C = Singleton("second")
     s_C.where_points("s_C")
 
-    # Created a first instance of `Singleton`
-    # Object `s_A` points to the first instance
-    # Object `s_B` points to the first instance
     # Created a second instance of `Singleton`
     # Object `s_C` points to the second instance
 
@@ -427,14 +432,14 @@ dot-notation as shown below:
 
 
 Running tests
---------------
+-------------
 
-To run the tests using your default python:
+To run the tests using your default python interpreter:
 
 ::
 
     pip install -U pytest
-    python3 -m pytest test
+    python -m pytest test
 
 
 .. |Build Status| image:: https://github.com/amarula/dyndesign/actions/workflows/python-app.yml/badge.svg
