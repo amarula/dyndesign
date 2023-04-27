@@ -6,6 +6,13 @@ DynDesign
 A set of tools for Dynamic Design Patterns in Python.
 
 
+Documentation
+-------------
+
+DynDesign's full documentation can be found at
+https://dyndesign.readthedocs.io/en/latest/
+
+
 Install
 -------
 
