@@ -306,8 +306,13 @@ merged with "ParentB", and "ChildA" is merged with "ChildB".
 It is also important to note that all inheritance functionalities still work as
 intended, meaning that "method_1" of "ParentA" can be accessed via cross-calling
 with "super().method_1()" from "ChildB". However, attempting to call "method_1"
-from a standalone instance of "ChildB" will result in an exception. To resolve
-this,  [safeinvoke](#safeinvoke) can be used in "ChildB.method_1":
+from a standalone instance of "ChildB" results in the exception
+```
+AttributeError: 'super' object has no attribute 'method_1'
+```
+To ensure that "super().method_1" is skipped without generating an exception
+when it is not found, [safeinvoke](#safeinvoke) can be used in
+"ChildB.method_1":
 
 ``` py
 from dyndesign import safeinvoke
@@ -319,6 +324,13 @@ class ChildB(ParentB):
     def method_1(self):
         safeinvoke("method_1", super())
         print("This is ChildB.method_1")
+
+
+ChildB().method_1()
+
+# This is `__init__` of `ParentB`
+# This is `__init__` of `ChildB`
+# This is ChildB.method_1
 ```
 
 <br/>
