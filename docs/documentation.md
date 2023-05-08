@@ -307,7 +307,7 @@ It is also important to note that all inheritance functionalities still work as
 intended, meaning that "method_1" of "ParentA" can be accessed via cross-calling
 with "super().method_1()" from "ChildB". However, attempting to call "method_1"
 from a standalone instance of "ChildB" results in the exception
-```
+``` bash
 AttributeError: 'super' object has no attribute 'method_1'
 ```
 To ensure that "super().method_1" is skipped without generating an exception
@@ -570,15 +570,48 @@ merged.m()
 # End of method decoration from Ext.
 ```
 
-### Decorators from component classes
+### Decorators from ancestor classes
 
 Arguments of `decoratewith` are loaded at runtime as properties of the variable
-`self`: as a result, a dynamic decorator can be, for example, a method of a
-component class. In case of dynamic decoration from a sub-instance of `self`,
-the instance object of the decorated method is passed to the decorator as the
-argument `decorated_self`.
+`self`, enabling dynamic decorators to be implemented using, for instance, a
+method from a parent class, which is not possible with static decorators.
 
 ``` py
+from dyndesign import decoratewith
+
+class Parent:
+    @staticmethod
+    def decorator(func):
+        print("Beginning of method decoration from Parent.")
+        func()
+        print("End of method decoration from Parent.")
+
+class Child(Parent):
+    @decoratewith("decorator")
+    @staticmethod
+    def m():
+        print(f"Method `m` of class `Child`")
+
+child = Child()
+child.m()
+
+# Beginning of method decoration from Parent.
+# Method `m` of class `Child`
+# End of method decoration from Parent.
+```
+
+The example above also shows that dynamic decorators can be combined with other
+static decorators with other static decorators, such as `staticmethod`.
+
+### Decorators from component classes
+
+A dynamic decorator can be a method of a component class as well. In case of
+dynamic decoration from a sub-instance of `self`, the instance object of the
+decorated method is passed to the decorator as the argument `decorated_self`.
+
+``` py
+from dyndesign import decoratewith
+
 class Base:
     def __init__(self):
         self.comp = Component()
