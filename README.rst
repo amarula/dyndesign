@@ -203,7 +203,7 @@ Dynamic Decorators
 ------------------
 
 Meta decorator ``decoratewith`` can be used to decorate a class method with one
-or more pipelined dynamic decorators, regardless whether they statically exist
+or more chained dynamic decorators, regardless whether they statically exist
 or not. Additionally, the syntax of the dynamic decorators aims to get rid of
 the boilerplate for wrapping and returning the decorator code, leaving just the
 wrapper's code. For example, dynamic decorators can be used to decorate a method
@@ -233,7 +233,7 @@ of a base class with a method of an extension class:
 
 If a decorator name is passed in the ``invoke_all`` argument of
 ``mergeclasses``, then multiple decorator instances with the same name from
-different extension classes may be used in pipeline:
+different extension classes may be used in chain:
 
 .. code:: python
 

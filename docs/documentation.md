@@ -338,7 +338,7 @@ ChildB().method_1()
 ## decoratewith
 
 Meta decorator `decoratewith` can be used to decorate a class method with one or
-more pipelined dynamic decorators, regardless whether they statically exist or
+more chained dynamic decorators, regardless whether they statically exist or
 not. Additionally, the syntax of the dynamic decorators aims to get rid of the
 boilerplate for wrapping and returning the decorator code, leaving just the
 wrapper's code.
@@ -370,7 +370,7 @@ def decorated_method(...):
 
 - **decorator2**, ...: str (*Optional*)  
     Further decorator methods to optionally decorate method "decorated_method"
-    in pipeline. All the decorator methods are executed as they were nested one
+    in chain. All the decorator methods are executed as they were nested one
     into the other following the order in which they are passed to
     `decoratewith`. <br/><br/>
 
@@ -470,9 +470,9 @@ merged.m("BETA")
 # End of method decoration from Ext.
 ```
 
-### Pipeline of dynamic decorators
+### Chain of dynamic decorators
 
-Multiple dynamic decorators are pipelined as the following:
+Multiple dynamic decorators are chained as the following:
 
 ``` py
 from dyndesign import decoratewith
@@ -554,7 +554,7 @@ The overload behavior of dynamic decorators can be altered with `invoke_all` in
 the same way as it works with methods. If a decorator name is passed in the
 `invoke_all` list as argument of `mergeclasses`, then multiple decorator
 instances with the same name from different extension classes are applied in
-pipeline, as if they had different names. In the above example, passing
+chain, as if they had different names. In the above example, passing
 "decorator" in the `invoke_all` list of `mergeclasses` results in:
 
 ``` py

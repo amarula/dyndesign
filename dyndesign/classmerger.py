@@ -81,7 +81,7 @@ def __decorator_builder(
 
     :param func: method to be decorated.
     :param decorator_instance: instance of decorator.
-    :param is_last_decorator: whether the decorator is the last in the pipeline or not.
+    :param is_last_decorator: whether the decorator is the last in the chain or not.
     :return: decorator wrapper.
     """
     args_from = 2 if is_last_decorator else 1
@@ -96,7 +96,7 @@ def __merged_decorator_builder(
     func: Callable,
     decorator_instances: List[Callable]
 ) -> Callable:
-    """Build a merged decorator wrapper from two or more instances of decorator (called in pipeline).
+    """Build a merged decorator wrapper from two or more instances of decorator (called in chain).
 
     :param func: method to be decorated.
     :param decorator_instances: two or more instances of decorator.
@@ -118,7 +118,7 @@ def __merge_not_overloaded(
     strict_merged_args: bool
 ) -> Union[Callable, None]:
     """Build a merged method by calling all the same-name method instances from the merged classes. If the method is
-    used as a decorator (via `decoratewith`), then all the decorator instances are merged and called in pipeline.
+    used as a decorator (via `decoratewith`), then all the decorator instances are merged and called in chain.
 
     :param classes: merged classes.
     :param method: name of the method to be merged.

@@ -61,7 +61,7 @@ def decoratewith(
         func: Callable,
         method_names: List[str] = method_names
     ) -> Callable:
-        """Decorator wrapper using one or more decorator methods in pipeline to decorate a function `func`.
+        """Decorator wrapper using one or more decorator methods in chain to decorate a function `func`.
 
         :param func: function to decorate.
         :param method_names: method name(s) of the one or more decorator methods.

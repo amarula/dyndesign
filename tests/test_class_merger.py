@@ -196,7 +196,7 @@ def test_merge_invoke_all_decorators():
     assert merged_instance.a2 == cmr.CLASS_M__A2, "Error calling decorator `M.d1`"
 
 
-def test_merge_invoke_all_decorators_in_pipeline():
+def test_merge_invoke_all_decorators_in_chain():
     """Class `L` is merged with classes `M` and `O`, and decorators `d2` of method `O.m1` are called from all the
     classes `L`, `M` and `O` following the order in which the classes are merged.
     """
@@ -210,7 +210,7 @@ def test_merge_invoke_all_decorators_in_pipeline():
         cmr.CLASS_O__ITEM_3,
         cmr.CLASS_M__ITEM_2,
         cmr.CLASS_L__ITEM_2,
-    ], ("Error calling decorator pipeline.")
+    ], ("Error calling decorator chain.")
 
 
 def test_merge_invoke_all_decorators_with_different_args():
@@ -225,4 +225,4 @@ def test_merge_invoke_all_decorators_with_different_args():
         cmr.CLASS_L__ITEM_1,
         cmr.CLASS_P__ITEM_1,
         cmr.CLASS_L__ITEM_2,
-    ], ("Error calling decorator pipeline.")
+    ], ("Error calling decorator chain.")
