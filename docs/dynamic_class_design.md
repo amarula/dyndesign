@@ -43,7 +43,7 @@ Parent classes can be dynamically added to the superclass set of a Child class
 in two ways. Firstly, they can be directly passed as arguments to the
 `dynparents_add` method inherited from `DynInheritance` special class.
 Alternatively, the paths to the parent classes can be provided in dot notation
-format, as described in the [importclass](misc_utilities#importclass) utility
+format, as described in the [importclass](../misc_utilities#importclass) utility
 documentation. In this case, the classes are imported and then appended to the
 superclass set of the Child class.
 
@@ -188,7 +188,7 @@ inside class "B" before that "B" inherits from "A" would result in a
 "TypeError".
 
 To safely access superclass's resources, the
-[safesuper](extended_class_communication#safesuper) method can be used instead
+[safesuper](../extended_class_communication#safesuper) method can be used instead
 of `super`.
 
 ## Dynamic Inheritance with locked instances
@@ -283,7 +283,7 @@ orphan_child.mtd()
 `super` function without any arguments may result in a TypeError exception. To
 avoid this, it is recommended to use `super(DynInheritanceLockedInstances,
 self)` instead, as shown in the above example. An alternative is to utilize the
-[safesuper](extended_class_communication#safesuper) method inherited from
+[safesuper](../extended_class_communication#safesuper) method inherited from
 `DynInheritanceLockedInstances` by invoking it as
 
 ``` py
@@ -324,10 +324,10 @@ child_with_parent.child_method()
 
 It is important to highlight that in this example, the method "parent_method"
 can be securely accessed from the "child_method" by utilizing the
-[safeinvoke](extended_class_communication#safeinvoke) function. As an
+[safeinvoke](../extended_class_communication#safeinvoke) function. As an
 alternative approach, the method "parent_method" could have been chained to a
 `safesuper` call, where the method is mocked as shown in [this
-example](extended_class_communication#mocking-methods).
+example](../extended_class_communication#mocking-methods).
 
 ## Class Merging
 
@@ -419,7 +419,7 @@ print(merged.method_ext())
 
 In the example below it is shown that arguments of mergeclasses can be
 alternatively passed as path to classes in dot notation, following the syntax
-outlined in the [importclass](misc_utilities#importclass) documentation.
+outlined in the [importclass](../misc_utilities#importclass) documentation.
 Additionally, it is shown that merged classes can be merged in turn with other
 classes. Assuming that a package "directory/extensions.py" includes class "Ext2"
 (defined analogously to "Ext"), the following lines can be appended to the
@@ -640,7 +640,7 @@ from a standalone instance of "ChildB" results in the exception
 AttributeError: 'super' object has no attribute 'method_1'
 ```
 To ensure that "super().method_1" is skipped without generating an exception
-when it is not found, [safeinvoke](extended_class_communication#safeinvoke) can
+when it is not found, [safeinvoke](../extended_class_communication#safeinvoke) can
 be used in "ChildB.method_1":
 
 ``` py
