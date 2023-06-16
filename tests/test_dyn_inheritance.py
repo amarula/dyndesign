@@ -295,7 +295,7 @@ def test_cannot_remove_dyn_inherit_class():
     assert D.dynparents_get() == (A,), "Error calling dynparents_get"
     D.dynparents_remove(DynInheritance)
     assert D.dynparents_get() == (A,), "Error base classes removed"
-    assert D.dyn_class == DynInheritance, "Error DynInheritance removed"
+    assert D._dyn_class == DynInheritance, "Error DynInheritance removed"
 
     D.dynparents_restore()
 

@@ -56,13 +56,6 @@ class DynInheritanceBase:
 
 
     @classmethod
-    @property
-    def dyn_class(cls) -> Type:
-        """Special class inherited by a dynamically inheriting class."""
-        return cls._dyn_class
-
-
-    @classmethod
     def dynparents_get(cls) -> Tuple[Type, ...]:
         """Get the superclass set of the dynamically inheriting class, excluding the special classes.
 
