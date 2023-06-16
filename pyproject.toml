@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "dyndesign"
-version = "0.9.7"
-description = "Toolset for Dynamic Design Patterns in Python."
+version = "0.9.8"
+description = "Toolset for Dynamic Design in Python."
 authors = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
 maintainers = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
 repository = "https://github.com/amarula/dyndesign"
 license = "MIT"
 readme = "README.rst"
-keywords = ["design", "pattern", "dynamic", "decorator", "inheritance"]
+keywords = ["design", "dynamic", "decorator", "inheritance"]
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",

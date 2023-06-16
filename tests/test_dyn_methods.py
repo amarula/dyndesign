@@ -2,7 +2,7 @@ import pytest
 
 from dyndesign import mergeclasses, safezone
 from .testing_results import DynamicMethodsResults as cdr
-from .sample_imported_methods import *
+from .samples.sample_imported_methods import *
 
 
 def test_simple_decoration():
@@ -18,7 +18,7 @@ def test_decoration_with_class_dynamically_imported():
     with method `d1` of class `DM_B`. It is noted that built-in static decorators do not allow to decorate a method
     unless it is in the current class scope.
     """
-    merged_class = mergeclasses(B, "tests.sample_classes_imported.DM_B")
+    merged_class = mergeclasses(B, "tests.samples.sample_classes_imported.DM_B")
     merged_instance = merged_class()
     assert merged_instance.m1() == (cdr.CLASS_B__M1, cdr.CLASS_DM_B__D1), "Error calling method `m1`"
 
@@ -33,7 +33,7 @@ def test_dynamic_context_manager_with_class_dynamically_imported():
     """Class `C` is merged with class `DM_C` (dynamically imported), and method `m1` of class `C` invokes method `d2`
     of class `DM_C` from the context manager `safezone`.
     """
-    merged_class = mergeclasses(C, "tests.sample_classes_imported.DM_C")
+    merged_class = mergeclasses(C, "tests.samples.sample_classes_imported.DM_C")
     merged_instance = merged_class(cdr.CLASS_C__M1)
     assert merged_instance.m1() == (cdr.CLASS_C__M1, cdr.CLASS_DM_C__D2), "Error calling method `m1`"
 
@@ -72,7 +72,7 @@ def test_invocation_with_class_dynamically_imported():
     """Class `D` is merged with class `DM_D` (dynamically imported), and method `m1` of class `C` invokes method `d3`
     of class `DM_C` through `safeinvoke`.
     """
-    merged_class = mergeclasses(D, "tests.sample_classes_imported.DM_D")
+    merged_class = mergeclasses(D, "tests.samples.sample_classes_imported.DM_D")
     merged_instance = merged_class()
     assert merged_instance.m1() == cdr.CLASS_DM_D__D3, "Error calling method `m1`"
 

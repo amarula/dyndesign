@@ -6,7 +6,7 @@ from collections import deque
 import re
 import inspect
 
-from dyndesign.dynloader import importclass
+from dyndesign.dynloader import preprocess_classes
 
 __all__ = ["mergeclasses"]
 
@@ -113,7 +113,7 @@ def __merged_decorator_builder(
 
 
 def __merge_not_overloaded(
-    classes: List[Type],
+    classes: Tuple[Type, ...],
     method: str,
     strict_merged_args: bool
 ) -> Union[Callable, None]:
@@ -150,22 +150,16 @@ def __merge_not_overloaded(
     return call_all_method_instances
 
 
-def __preprocess_classes(all_classes: Any) -> List[Type]:
-    """Dynamically import classes if passed as strings."""
-    return [importclass(class_id) if type(class_id) == str else class_id for class_id in all_classes]
-
-
+@preprocess_classes
 def mergeclasses(
-    base_class: Any,
-    *extension_classes: Any,
+    *all_classes: Type,
     invoke_all: Union[List[str], None] = None,
     strict_merged_args = True
 ) -> Type:
-    """Merge (i.e., extend) a base class with one or more extension classes. If more than one extension classes are
-    provided, then the classes are extended in sequence following the order of `extension_classes`.
+    """Merge a base class with one or more extension classes. If more than one extension classes are
+    provided, then the classes are merged in sequence following the order of `extension_classes`.
 
-    :param base_class: base class.
-    :param extension_classes: extension classes.
+    :param all_classes: base and extension classes.
     :param invoke_all: list of methods (in addition to `__init__`) whose instances are invoked (if present) from all
                        the merged classes, rather than being overloaded by the instance from the rightmost class.
     :param strict_merged_args: controls whether a `TypeError` exception is raised or not in case one or more positional
@@ -173,7 +167,6 @@ def mergeclasses(
                                an exception is raised, otherwise methods with missing arguments are silently skipped.
     :return: merged class.
     """
-    all_classes = __preprocess_classes((base_class,) + extension_classes)
     invoke_all = ["__init__"] + (invoke_all or [])
     methods_not_oveloaded = {
         method: merged for method in invoke_all if (

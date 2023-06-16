@@ -4,6 +4,8 @@ theme:
 nav:
     - Installation: install.md
     - Overview: overview.md
-    - Documentation: documentation.md
+    - Dynamic Class Design: dynamic_class_design.md
+    - Extended Communication Between Classes: extended_class_communication.md
+    - Misc Utilities: misc_utilities.md
     - Tests: tests.md
     - License: license.md

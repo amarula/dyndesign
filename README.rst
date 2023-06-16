@@ -3,7 +3,7 @@ DynDesign
 
 |Build Status| |PyPi Version Status| |Python Version Status| |License|
 
-A set of tools for Dynamic Design Patterns in Python.
+A set of tools for Dynamic Design in Python.
 
 
 Documentation
@@ -26,13 +26,29 @@ Dyndesign is on the Python Package Index (PyPI):
 Overview
 --------
 
+Dynamically add parent classes:
+
+.. code:: python
+
+    from dyndesign import DynInheritance
+
+    class Child(DynInheritance):
+        ...
+
+    Child.dynparents_add(Parent1)
+    c = Child()
+    c.method_of_Parent1()
+
+
 Merge two or more classes:
 
 .. code:: python
 
     from dyndesign import mergeclasses
 
-    MergedClass = mergeclasses(Base, Ext1, Ext2, ...)
+    MergedClass = mergeclasses(Base, Ext1)
+    m = MergedClass()
+    m.method_of_Ext1()
 
 Decorate a method with one or more instance methods loaded at runtime:
 
@@ -44,16 +60,21 @@ Decorate a method with one or more instance methods loaded at runtime:
     def decorated_method(self, ...):
         ...
 
-Safely invoke functions or methods from a ``safezone`` context manager:
+Safely invoke functions or methods from a ``safezone`` context manager or by
+using the ``safeinvoke`` API:
 
 .. code:: python
 
-    from dyndesign import safezone
+    from dyndesign import safezone, safeinvoke
 
     with safezone():
         ...
         function_possibly_non_existent()
-        ...
+
+    ...
+
+    def method(self):
+        safeinvoke("method_possibly_non_existent", self)
 
 Create and destroy Singleton classes:
 
@@ -78,8 +99,74 @@ Import classes dynamically using the path:
     ImportedClass = importclass("directory.module.class_name")
 
 
-Merging Classes
----------------
+Dynamic Inheritance
+-------------------
+
+With Dynamic Inheritance, it becomes possible to dynamically modify the
+superclass set of classes that inherit from special class ``DynInheritance``. This
+allows the addition of parent classes to those classes, and the modification is
+also instantly reflected in all their instances.
+
+.. code:: python
+
+    from dyndesign import DynInheritance
+
+    class Parent:
+        def m1(self):
+            print("Method `m1` from `Parent`")
+
+    class Child(DynInheritance):
+        def __init__(self):
+            print("Constructor of `Child`")
+
+    child_instance = Child()
+
+    # Constructor of `Child`
+
+    Child.dynparents_add(Parent)
+    child_instance.m1()
+
+    # Method `m1` from `Parent`
+
+When the special class ``DynInheritanceLockedInstances`` is utilized instead of
+``DynInheritance``, the superclass set is locked within each class instance,
+meaning that it remains unchanged even when there are modifications to the
+class's superclasses.
+
+.. code:: python
+
+    class Parent:
+        def __init__(self):
+            print("Constructor of `Parent`")
+
+        def mtd(self):
+            print("Method `mtd` of `Parent`")
+
+    class Child(DynInheritanceLockedInstances):
+        def __init__(self):
+            super(DynInheritanceLockedInstances, self).__init__()
+            print("Constructor of `Child`")
+
+    orphan_child = Child()
+
+    # Constructor of `Child`
+
+    Child.dynparents_add(Parent)
+    child_with_parent = Child()
+
+    # Constructor of `Parent`
+    # Constructor of `Child`
+
+    child_with_parent.mtd()
+
+    # Method `mtd` of `Parent`
+
+    orphan_child.mtd()
+
+    # AttributeError: 'Child' object has no attribute 'mtd'
+
+Class Merging
+-------------
 
 Dyndesign provides API ``mergeclasses`` to merge two or more classes as if they
 were dictionaries. As a result, the newly created class has the same properties
@@ -313,7 +400,7 @@ exist at runtime:
 .. code:: python
 
     from dyndesign import safezone
-    
+
     def fallback():
         print("Fallback function")
 

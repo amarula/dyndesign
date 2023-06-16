@@ -1,5 +1,5 @@
 from dyndesign import SingletonMeta
-from .sample_singletons import A, B
+from .samples.sample_singletons import A, B
 from .testing_results import SingletonsResults as sr
 
 

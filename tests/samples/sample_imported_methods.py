@@ -1,5 +1,5 @@
 from dyndesign import decoratewith, importclass, safeinvoke, safezone
-from .testing_results import DynamicMethodsResults as cdr
+from ..testing_results import DynamicMethodsResults as cdr
 
 
 class A:
@@ -76,7 +76,7 @@ class H(G):
 class I:
 
     def __init__(self):
-        self.dm_i = importclass("tests.sample_classes_imported.DM_I")(cdr.CLASS_I__A1)
+        self.dm_i = importclass("tests.samples.sample_classes_imported.DM_I")(cdr.CLASS_I__A1)
 
     @decoratewith("dm_i.d7")
     def m1(self):
@@ -86,7 +86,7 @@ class I:
 class J:
 
     def __init__(self):
-        self.dm_j = importclass("tests.sample_classes_imported.DM_J")()
+        self.dm_j = importclass("tests.samples.sample_classes_imported.DM_J")()
 
     @decoratewith("d8", "d9", method_sub_instance="dm_j")
     def m1(self):

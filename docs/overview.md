@@ -1,18 +1,18 @@
 Overview
 ========
 
-DynDesign is a set of tools for Python developers that employs a novel strategy
-when it comes to implementing design patterns; it enables developers to merge
-classes on the fly as though they were working with dictionaries. By doing so,
-DynDesign strives to follow several software engineering principles such as the
-Single Responsibility and Open-Closed Principles from the **SOLID** acronym,
-along with the **DRY** and **KISS** concepts.
+Dyndesign is a toolkit that offers developers the utmost flexibility in
+dynamically designing class structures. It empowers developers to **modify the
+class inheritance hierarchy** as well as to **merge classes** as though they
+were working with dictionaries.
 
-The most used tools are:
+In order to manage the communication between dynamically interconnected classes
+effectively, a dedicated set of tools is provided, enabling developers to
+**safely utilize resources** from classes that **may or may not be
+interconnected** to other classes.
 
-- `mergeclasses`, an API to merge two or more classes;
-- a set of tools to dynamically invoke methods or decorators at runtime, such as
-  `decoratewith`;
-- `SingletonMeta` metaclass, that can be used to implement a dynamic class builder.
+The primary objective of DynDesign is to adhere to several software engineering
+principles such as the Single Responsibility and Open-Closed Principles from the
+**SOLID** acronym, along with the **DRY** and **KISS** concepts.
 
 <br/>

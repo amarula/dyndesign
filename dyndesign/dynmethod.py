@@ -6,6 +6,8 @@ from operator import attrgetter
 import re
 from typing import Any, Callable, List, Union
 
+from dyndesign.exceptions import ErrorMethodNotFound
+
 __all__ = ["decoratewith", "safeinvoke", "safezone"]
 
 
@@ -157,7 +159,3 @@ class safezone(AbstractContextManager):
         if result and self.__fallback:
             self.__fallback()
         return result
-
-
-class ErrorMethodNotFound(Exception):
-    """Raised when a dynamic method cannot be found."""
