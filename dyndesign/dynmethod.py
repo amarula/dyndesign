@@ -97,8 +97,8 @@ def decoratewith(
 def safeinvoke(
     method_name: str,
     instance: object,
-    fallback: Union[Callable, None] = None,
     *args,
+    fallback: Union[Callable, None] = None,
     **kwargs
 ) -> Any:
     """Attempt to invoke a method of a class instance. If the method is not found, code execution proceeds

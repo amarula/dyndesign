@@ -508,12 +508,12 @@ returned_value = safeinvoke("method_name", instance, fallback=fallback, *args, *
     Class instance that may or may not include the method referenced to with
     "method_name".<br/><br/>
 
+- **args** (*Optional*)  
+    Positional arguments passed to "method_name".<br/><br/>
+
 - **fallback**: Callable (*Optional*)  
     If "method_name" does not exists at runtime, then a "fallback" function is
     called with the same arguments passed to "method_name".<br/><br/>
-
-- **args** (*Optional*)  
-    Positional arguments passed to "method_name".<br/><br/>
 
 - **kwargs** (*Optional*)  
     Keyword arguments passed to "method_name".<br/><br/>
