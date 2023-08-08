@@ -5,7 +5,7 @@ from builtins import super as builtin_super
 from dyndesign.dynloader import preprocess_classes
 from dyndesign.utils import back_frame
 
-__all__ = ["DynInheritanceBase"]
+__all__ = ["DynInheritanceBase", "safesuper"]
 
 TypeObjectSuper = Union[object, super, None]
 TypeTupleOptEmpty = Union[Tuple[str, ], Tuple[()]]
@@ -149,3 +149,16 @@ class DynInheritanceBase:
                 return ClassMock()
             else:
                 return None
+
+
+def safesuper(
+        type: Type,
+        object_or_type: TypeObjectSuper,
+        mocked_attrs: TypeTupleOptEmpty = (),
+        mocked_methods: TypeTupleOptEmpty = ()
+    ) -> TypeObjectSuper:
+    """Intermediate invoker function to call `DynInheritanceBase.safesuper`. This applies not only within the context of
+    a dynamically inherited class, but also as a standalone function, requiring mandatory `type` and `object_or_type`
+    arguments.
+    """
+    return DynInheritanceBase.safesuper(type, object_or_type, mocked_attrs, mocked_methods)

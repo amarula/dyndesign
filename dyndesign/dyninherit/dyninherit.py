@@ -1,6 +1,6 @@
 from typing import Type
 
-from dyndesign.dyninherit_base import DynInheritanceBase
+from dyndesign.dyninherit.dyninherit_base import DynInheritanceBase
 
 __all__ = ["DynInheritance"]
 

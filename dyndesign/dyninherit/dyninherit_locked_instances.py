@@ -4,7 +4,7 @@ import inspect
 from pathlib import PosixPath
 import sys
 
-from dyndesign.dyninherit_base import DynInheritanceBase
+from dyndesign.dyninherit.dyninherit_base import DynInheritanceBase
 from dyndesign.exceptions import ErrorClassNotFoundInModules
 from dyndesign.utils import back_frame
 
