@@ -62,8 +62,8 @@ def decorated_method(...):
     omitted and passed in `method_sub_instance` to avoid repetitions.<br/><br/>
 
 - **fallback**: Callable (*Optional*)  
-    If any decorator does not exists at the the "decorated_method" call time,
-    then a "fallback" function is called with the same arguments passed to
+    If any decorator does not exist at the "decorated_method" call time, then a
+    "fallback" function is called with the same arguments passed to
     "decorated_method".<br/><br/>
 
 - **disable_property**: str (*Optional*)  
@@ -422,7 +422,7 @@ with safezone("callable_name1", "callable_name2", ..., fallback=fallback):
     suppressed for all the callables.<br/><br/>
 
 - **fallback**: Callable (*Optional*)  
-    If any callable invoked within the `safezone` context does not exists at the
+    If any callable invoked within the `safezone` context does not exist at the
     call time, then a "fallback" function is called with the same arguments
     passed to the missing callable.<br/>
 
@@ -512,7 +512,7 @@ returned_value = safeinvoke("method_name", instance, fallback=fallback, *args, *
     Positional arguments passed to "method_name".<br/><br/>
 
 - **fallback**: Callable (*Optional*)  
-    If "method_name" does not exists at runtime, then a "fallback" function is
+    If "method_name" does not exist at runtime, then a "fallback" function is
     called with the same arguments passed to "method_name".<br/><br/>
 
 - **kwargs** (*Optional*)  
@@ -624,7 +624,7 @@ C()
 ### Mocking methods
 
 If a class is not yet included in the superclass set and the class methods have
-to be accessed from the future child class, those methods can be mocked so as to
+to be accessed from the future child class, those methods can be mocked to
 prevent `AttributeError` exceptions:
 
 ``` py

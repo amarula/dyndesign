@@ -1,9 +1,9 @@
 from ...samples.sample_classes_inheritance import *
 
 
-class AdditionalDynIneritanceTests:
+class AdditionalDynInheritanceTests:
 
     @staticmethod
-    def get_B_Locked():
-        B_Locked.dynparents_add(A)
-        return B_Locked
+    def get_BLocked():
+        BLocked.dynparents_add(A)
+        return BLocked

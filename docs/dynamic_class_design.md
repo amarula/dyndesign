@@ -187,7 +187,7 @@ which can lead to a runtime exception. For instance, using `super(A, self)`
 inside class "B" before that "B" inherits from "A" would result in a
 "TypeError".
 
-To safely access superclass's resources, the
+To safely access superclass resources, the
 [safesuper](../extended_class_communication#safesuper) method can be used instead
 of `super`.
 
@@ -384,7 +384,7 @@ MergedClass = mergeclasses(
 
 ### Basic Examples
 
-Two classes can be easily combined together as in the following example:
+Two classes can be easily combined as in the following example:
 
 ``` py
 from dyndesign import mergeclasses

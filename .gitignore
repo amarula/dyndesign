@@ -1,4 +1,6 @@
+.python-version
 *.pyc
 *.bak.py
+.idea/*
 .vscode/*
 dist/*

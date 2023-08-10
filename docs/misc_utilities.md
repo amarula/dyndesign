@@ -43,7 +43,7 @@ SingletonMeta.destroy()
 In the example below, class "Singleton" is created the first time with parameter
 "instance_id" equal to "first". Further instances of "Singleton" still point to
 the same "first" instance, regardless of the value of "instance_id" passed.
-After that "Singleton" is destroyed with `destroy_singleton`, a instance is
+After that "Singleton" is destroyed with `destroy_singleton`, an instance is
 created with "instance_id" equal to "second".
 
 ``` py
@@ -81,7 +81,7 @@ s_C.where_points("s_C")
 ### Merging singleton classes
 
 If a singleton class is merged with other classes using `mergeclasses`, the
-merged class "inherits" the singleteness property. For instance, class
+merged class "inherits" the singleton property. For instance, class
 "Singleton" from the above example can be extended with class "T" as shown
 below:
 
