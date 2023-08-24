@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dyndesign"
-version = "0.9.8"
+version = "1.0.0"
 description = "Toolset for Dynamic Design in Python."
 authors = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]
 maintainers = ["Patrizio Gelosi <patrizio.gelosi@amarulasolutions.com>"]

@@ -55,13 +55,8 @@ def adapt_arguments(func: Callable, *args, **kwargs) -> Tuple[List, Dict]:
     return res_args, res_kwargs
 
 
-def call_obj_with_adapted_args(
-        instance: Callable,
-        obj: Optional[object],
-        *args,
-        strict_missing_args: bool = True,
-        **kwargs
-) -> Any:
+def call_obj_with_adapted_args(instance: Callable, obj: Optional[object], *args, strict_missing_args: bool = True,
+                               **kwargs) -> Any:
     """
     Call the given instance with adapted arguments.
 
@@ -82,13 +77,8 @@ def call_obj_with_adapted_args(
             raise e
 
 
-def call_method_with_adapted_args(
-        instance: Callable,
-        obj: Optional[object],
-        *args,
-        strict_missing_args: bool = True,
-        **kwargs
-) -> Any:
+def call_method_with_adapted_args(instance: Callable, obj: Optional[object], *args, strict_missing_args: bool = True,
+                                  **kwargs) -> Any:
     """
     Call the given instance method with adapted arguments.
 

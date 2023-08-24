@@ -8,12 +8,14 @@ class ClassResults(IntEnum):
     CLASS_A__M2 = auto()
     CLASS_B__A1 = auto()
     CLASS_B__M1 = auto()
+    CLASS_B__M3 = auto()
     CLASS_B_CHILD__M1 = auto()
     CLASS_B_CHILD__M3 = auto()
     CLASS_C_CHILD__A2 = auto()
     CLASS_C__A1 = auto()
     CLASS_C__A3 = auto()
     CLASS_C__M1 = auto()
+    CLASS_C__M2 = auto()
     CLASS_C__M3 = auto()
     CLASS_C_CHILD__A1 = auto()
     CLASS_C_CHILD__M2 = auto()
@@ -29,7 +31,7 @@ class ClassResults(IntEnum):
     CLASS_G__M1 = auto()
     CLASS_G__O1 = auto()
     CLASS_G__K1 = auto()
-    CLASS_H__A1= auto()
+    CLASS_H__A1 = auto()
     CLASS_H__O2 = auto()
     CLASS_H__K2 = auto()
     CLASS_H__M2 = auto()
@@ -49,6 +51,19 @@ class ClassResults(IntEnum):
     CLASS_O__ITEM_3 = auto()
     CLASS_P__ITEM_1 = auto()
     CLASS_P__P2 = auto()
+    INTEGRITY_CHECK_1 = auto()
+    BASE_PARAM_1 = auto()
+    BASE_PARAM_2 = auto()
+    BASE_PARAM_2_ALT = auto()
+
+
+class MiscParams(IntEnum):
+    OPTION_1 = auto()
+    OPTION_2 = auto()
+    OPTION_3 = auto()
+    THRESHOLD_VALUE = 10
+    LT_THRESHOLD_VALUE = 5
+    GT_THRESHOLD_VALUE = 20
 
 
 class DynamicMethodsResults(IntEnum):
