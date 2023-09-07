@@ -25,32 +25,70 @@ Dyndesign is on the Python Package Index (PyPI):
 
 Overview
 --------
+Dyndesign is a toolkit that gives developers the ultimate flexibility in
+dynamically designing class structures.
 
-Dynamically add parent classes:
+Here are examples of DynDesign's powerful tools in action.
+
+* Dynamically build a class using selected Building Options:
+
+.. code:: python
+
+    from dyndesign import buildclass, dynconfig
+
+    class Parent:
+        ...
+
+    class Component:
+        ...
+
+    @dynconfig({
+        "OptionA": ClassConfig(inherit_from=Parent),
+        "OptionB": ClassConfig(component_attr="comp", component_class=Component),
+    })
+    class Base:
+        ...
+
+    BuiltClass = buildclass(Base, OptionA=True, OptionB=True)
+    b = BuiltClass()
+    b.method_of_parent()
+    b.comp.method_of_component()
+
+
+* Dynamically add parent classes:
 
 .. code:: python
 
     from dyndesign import DynInheritance
+
+    class Parent1:
+        ...
 
     class Child(DynInheritance):
         ...
 
     Child.dynparents_add(Parent1)
     c = Child()
-    c.method_of_Parent1()
+    c.method_of_parent1()
 
 
-Merge two or more classes:
+* Merge two or more classes:
 
 .. code:: python
 
     from dyndesign import mergeclasses
 
+    class Base:
+        ...
+
+    class Ext1:
+        ...
+
     MergedClass = mergeclasses(Base, Ext1)
     m = MergedClass()
     m.method_of_Ext1()
 
-Decorate a method with one or more instance methods loaded at runtime:
+* Decorate a method with one or more instance methods loaded at runtime:
 
 .. code:: python
 
@@ -60,8 +98,8 @@ Decorate a method with one or more instance methods loaded at runtime:
     def decorated_method(self, ...):
         ...
 
-Safely invoke functions or methods from a ``safezone`` context manager or by
-using the ``safeinvoke`` API:
+* Safely invoke functions or methods from a ``safezone`` context manager or by
+  using the ``safeinvoke`` API:
 
 .. code:: python
 
@@ -76,7 +114,7 @@ using the ``safeinvoke`` API:
     def method(self):
         safeinvoke("method_possibly_non_existent", self)
 
-Create and destroy Singleton classes:
+* Create and destroy Singleton classes:
 
 .. code:: python
 
@@ -90,7 +128,7 @@ Create and destroy Singleton classes:
     Singleton().destroy_singleton()
     new_singleton_instance = Singleton(...)
 
-Import classes dynamically using the path:
+* Import classes dynamically using the path:
 
 .. code:: python
 
@@ -98,6 +136,92 @@ Import classes dynamically using the path:
 
     ImportedClass = importclass("directory.module.class_name")
 
+
+Class Builder
+-------------
+
+Class Builder is a powerful new tool from DynDesign that makes it easy to build
+classes by configuring existing classes with selected options.
+
+Building classes involves incorporating one or more Class Dependencies, including
+**parent classes** and **component classes**. This can be achieved using two
+essential tools: the ``dynconfig`` decorator, which allows the base class to be
+configured with potential dependencies, and the ``buildclass`` function, which
+builds new classes by seamlessly integrating selected class dependencies using a
+specified set of building options.
+
+Below is an example of building a class that optionally inherits from classes A
+and B.
+
+.. code:: python
+
+    from dyndesign import buildclass, dynconfig, ClassConfig
+
+    class A:
+        def __init__(self):
+            print("Inheriting from `A`")
+
+    class B:
+        def __init__(self):
+            print("Inheriting from `B`")
+
+
+    @dynconfig({
+        "OptionA": ClassConfig(inherit_from=A),
+        "OptionB": ClassConfig(inherit_from=B),
+    })
+    class Base:
+        ...
+
+
+    Built = buildclass(Base, OptionA=True)
+    Built()
+    # Inheriting from `A`
+
+    Built = buildclass(Base, OptionB=True)
+    Built()
+    # Inheriting from `B`
+
+Classes can be configured to enable the injection of component classes into
+specific methods (or into the default ``__init__`` method).
+
+.. code:: python
+
+    from dyndesign import buildclass, dynconfig, ClassConfig
+
+    class A:
+        def whoami(self):
+            print("Using component `A`")
+
+    class Default:
+        def whoami(self):
+            print("Using component `Default`")
+
+    class Configurator:
+        OptionA = ClassConfig(
+            component_class=A,
+            component_attr="comp",
+            default_class=Default
+        )
+
+    @dynconfig(Configurator)
+    class Base:
+        def __init__(self):
+            self.comp.whoami()
+
+
+    Built = buildclass(Base, OptionA=True)
+    Built()
+    # Using component `A`
+
+    Built = buildclass(Base, OptionA=False)
+    Built()
+    # Using component `Default`
+
+Another important point demonstrated in the example is that class configuration
+can be encapsulated in a Configurator class. This helps to **separate** the code
+that is responsible for **class configuration from the core logic** of the
+classes.
 
 Dynamic Inheritance
 -------------------

@@ -4,13 +4,14 @@ To complement the flexibility offered by the Dynamic Class Design tools, an
 additional set of tools is required to **safely extend communication between
 classes that may or may not be interconnected**.
 
-For example, classes may be
-interconnected through:
-- (dynamic) inheritance form a hierarchical relationship;
-- composition, where one class contains an instance of another class as a
+For example, classes may be interconnected through:
+- [Dynamic Class Building](../class_builder);
+- [Dynamic
+  Inheritance](../dynamic_class_design#dynamic-inheritance-with-live-updating-instances);
+- Composition, where one class contains an instance of another class as a
   component or part of its implementation; or
-- merging, where two or more classes are merged to create a new class using
-  `mergeclasses`.
+- [Class Merging](../dynamic_class_design#class-merging), where two or more
+  classes are merged to create a new class using `mergeclasses`.
 
 Considering the optional nature of the interconnect types, the communication
 mechanism is designed to handle cases where a class may be not (yet)
@@ -540,19 +541,20 @@ def m(self, class_desc):
 
 <br/>
 
-## safesuper
+## safesuper method
 
-When dynamic inheritance is utilized, the usage of the `super` builtin
-function in a temporarily non-inheriting class might result in exceptions. To
-prevent such exceptions, the alternative option of employing the `safesuper`
-method can be utilized.
+When [Dynamic
+Inheritance](../dynamic_class_design#dynamic-inheritance-with-live-updating-instances)
+is utilized, the usage of the `super` builtin function in a temporarily
+non-inheriting class might result in exceptions. To prevent such exceptions, the
+alternative option of employing the `safesuper` method can be utilized.
 
 ### Syntax
 
 ``` py
 super_object = self.safesuper(
-    type=None,
-    object_or_type=None,
+    subclass=Subclass | None,
+    object_or_type=subclass_instance | None,
     mocked_attrs=("mocked_attr_1", "mocked_attr_2", ...),
     mocked_methods=("mocked_method_1", "mocked_method_2", ...)
 )
@@ -560,8 +562,8 @@ super_object = self.safesuper(
 
 **Arguments:**
 
-- **type**: type (*Optional*)  
-    Class optionally passed as first argument to `super` builtin function.
+- **subclass**: type (*Optional*)  
+    Subclass optionally passed as first argument to `super` builtin function.
     <br/><br/>
 
 - **object_or_type**: type or object (*Optional*)  
@@ -649,5 +651,29 @@ B().mtd()
 # Method `mtd` of Class `A`
 # Method `mtd` of Class `B`
 ```
+
+## safesuper function
+
+`safesuper` can be used as a function within any class as well as a method within
+classes using Dynamic Inheritance. The only syntax difference lies in the first
+two arguments, which are required in `safesuper` function, while they remain
+optional when using it as a method.
+
+### Syntax
+
+``` py
+super_object = self.safesuper(
+    subclass=Subclass,
+    object_or_type=subclass_instance,
+    mocked_attrs=("mocked_attr_1", "mocked_attr_2", ...),
+    mocked_methods=("mocked_method_1", "mocked_method_2", ...)
+)
+```
+*A detailed description of the arguments can be found in the [safesuper
+method](#safesuper-method) section.*
+
+The `safesuper` function can be utilized in classes serving as bases for
+`buildclass`, as shown in [this
+example](../class_builder#safely-accessing-to-superclasses).
 
 <br/>

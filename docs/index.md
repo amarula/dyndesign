@@ -1,9 +1,10 @@
 # Table of Contents
 
 1. [Installation](install)
-2. [Overview](overview)
-3. [Dynamic Class Design](dynamic_class_design)
-4. [Extended Communication Between Classes](extended_class_communication)
-5. [Misc Utilities](misc_utilities)
-6. [Tests](tests)
-7. [License](license)
+1. [Overview](overview)
+1. [Class Builder](class_builder)
+1. [Dynamic Class Design](dynamic_class_design)
+1. [Extended Communication Between Classes](extended_class_communication)
+1. [Misc Utilities](misc_utilities)
+1. [Tests](tests)
+1. [License](license)

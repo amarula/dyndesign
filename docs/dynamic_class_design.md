@@ -1,6 +1,6 @@
 # Dynamic Class Design
 
-Dynamic Class Design is a powerful package that offers developers two essential
+Dynamic Class Design is a powerful module that offers developers two essential
 features for flexible and dynamic class manipulation: dynamic inheritance and
 class merging. With these capabilities, developers gain unprecedented control
 over the structure and behavior of their classes, enabling them to adapt and
@@ -187,9 +187,9 @@ which can lead to a runtime exception. For instance, using `super(A, self)`
 inside class "B" before that "B" inherits from "A" would result in a
 "TypeError".
 
-To safely access superclass resources, the
-[safesuper](../extended_class_communication#safesuper) method can be used instead
-of `super`.
+To safely access superclass resources, the [safesuper
+method](../extended_class_communication#safesuper-method) can be used
+instead of `super`.
 
 ## Dynamic Inheritance with locked instances
 
@@ -281,10 +281,10 @@ orphan_child.mtd()
 
 **Note:** When utilizing dynamic inheritance with locked instances, invoking the
 `super` function without any arguments may result in a TypeError exception. To
-avoid this, it is recommended to use `super(DynInheritanceLockedInstances,
-self)` instead, as shown in the above example. An alternative is to utilize the
-[safesuper](../extended_class_communication#safesuper) method inherited from
-`DynInheritanceLockedInstances` by invoking it as
+avoid this, it is recommended to use `super(DynInheritanceLockedInstances, self)`
+instead, as shown in the above example. An alternative is to utilize the
+[safesuper method](../extended_class_communication#safesuper-method) inherited
+from `DynInheritanceLockedInstances` by invoking it as
 
 ``` py
 self.safesuper()
