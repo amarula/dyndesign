@@ -279,7 +279,7 @@ orphan_child.mtd()
 # AttributeError: 'Child' object has no attribute 'mtd'
 ```
 
-**Note:** When utilizing dynamic inheritance with locked instances, invoking the
+NOTE: When utilizing dynamic inheritance with locked instances, invoking the
 `super` function without any arguments may result in a TypeError exception. To
 avoid this, it is recommended to use `super(DynInheritanceLockedInstances, self)`
 instead, as shown in the above example. An alternative is to utilize the

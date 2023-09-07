@@ -47,9 +47,10 @@ def decorated_method(...):
     in other words, if "decorator1" is a property of `self` when
     "decorated_method" is invoked, then it is used to decorate
     "decorated_method", otherwise the method is executed without any decoration.
-    **Note:** Any sub-property of `self`, such as methods of component classes,
+
+    NOTE: *Any sub-property of `self`, such as methods of component classes,
     may be also used as decorator: in this case the **dot notation** can be used
-    to select the path to the decorator method.<br/><br/>
+    to select the path to the decorator method.*<br/><br/>
 
 - **decorator2**, ...: str (*Optional*)  
     Further decorator methods to optionally decorate method "decorated_method"
@@ -621,8 +622,6 @@ C()
 # Constructor of Class `C`
 ```
 
-<br/>
-
 ### Mocking methods
 
 If a class is not yet included in the superclass set and the class methods have
@@ -652,6 +651,8 @@ B().mtd()
 # Method `mtd` of Class `B`
 ```
 
+<br/>
+
 ## safesuper function
 
 `safesuper` can be used as a function within any class as well as a method within
@@ -674,6 +675,6 @@ method](#safesuper-method) section.*
 
 The `safesuper` function can be utilized in classes serving as bases for
 `buildclass`, as shown in [this
-example](../class_builder#safely-accessing-to-superclasses).
+example](../class_builder#safely-initializing-specific-parent-classes).
 
 <br/>

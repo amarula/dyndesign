@@ -17,6 +17,7 @@ Options**, which enable the selection of one of a set of alternative choices.
 
 The class configuration is achieved through the `dynconfig` decorator, offering
 three distinct levels of separation between class configuration and core logic:
+
 1. the class configuration can be encapsulated within a Configurator class that
    can be seamlessly associated with the Base class using `dynconfig` as a class
    decorator,
@@ -229,7 +230,7 @@ ClassConfig(
 
     NOTE: *`component_attr` must be provided in any case through one of the four
     methods outlined in the [Global Configuration](#global-configuration)
-    section.* <br/><br/>
+    section.*<br/><br/>
 
 - **default_class**: Type *or* str (*Optional*)  
     The class to be instantiated as component and injected into the Base class
@@ -397,18 +398,17 @@ The following Global Settings affect the global behavior of Class Builder.
     defined Class Dependencies and those added dynamically are built recursively
     in accordance with the table below.
 
-    |                       | Parent Dependencies |     Component Dependencies      |
-    |-----------------------|:-------------------:|:-------------------------------:|
-    | **Static**            |    Automatically    | Manually (via `buildcomponent`) |
-    | **Added Dynamically** |    Automatically    |          Automatically          |
+    |                       | Parent Dependencies |      Component Dependencies       |
+    |-----------------------|:-------------------:|:---------------------------------:|
+    | **Static**            |    Automatically    | Manually (via **buildcomponent**) |
+    | **Added Dynamically** |    Automatically    |           Automatically           |
 
     If a dependency added dynamically by Class Builder is also dynamically
     configurable, it will be automatically configured with the same Options as
     the Base class. This also applies to static parent classes of base classes.
     However, if a static component class requires recursive configuration, it
     needs to be explicitly configured using `buildcomponent`, as explained in
-    details in [this section](#building-of-static-component-dependencies).  
-    <br/>
+    details in [this section](#building-of-static-component-dependencies).<br/><br/>
 
 - **class_builder_base_dir**: str  
     The base directory from which the Configurator and Dependent Classes are
@@ -688,6 +688,7 @@ If the BuiltClass is built with the "value" Option less than THRESHOLD (set at
 to THRESHOLD, the built class inherits from P1.
 
 NOTES:
+
 - *Any callable object, including lambda functions as well as static, class, and
   instance methods, can be used as conditional function.*
 - *Any class and instance attribute of the Base class (such as THRESHOLD) can be
@@ -1074,6 +1075,7 @@ function, in the same way as when passing the configuration settings explicitly.
 The arguments that are passed to component constructors can be customized to
 achieve any desired result. This can be accomplished through two distinct
 approaches:
+
 1. By partially or entirely replacing the arguments passed to the injection method
    and/or adding new ones. This can be achieved using the argument filtering
    settings `init_args_keep_first`, `init_args_from_self`, and
@@ -1223,7 +1225,7 @@ recursively added as follows:
 - The Component1 class is added to the Base class.
 - The Component1 class inherits from the ParentComponent1 class.
 
-<img alt="Class Dependency Diagram" src="img/build_recursive_example.png">
+![Class Dependency Diagram](https://github.com/amarula/dyndesign/blob/7664a4456271ccac2f0e27a276a754c2d7f7ec98/docs/img/build_recursive_example.png?raw=true)
 
 The code snippet below implements the process of building the class.
 
@@ -1293,7 +1295,7 @@ section, introducing an additional static component called Component2. When a
 class is built from the Base class with "optionA" set to True, Component2
 dynamically inherits from the ParentOfComponent2 class.
 
-<img alt="Class Dependency Diagram" src="img/build_recursive_static_component_example.png">
+![Class Dependency Diagram](https://github.com/amarula/dyndesign/blob/7664a4456271ccac2f0e27a276a754c2d7f7ec98/docs/img/build_recursive_static_component_example.png?raw=true)
 
 Below are the changes to the code of the previous section.
 
@@ -1343,7 +1345,7 @@ disabled in the previous example, only the classes directly dependent from Base
 and the component classes built using `dynconfig.buildcomponent` will be
 recursively configured.
 
-<img alt="Class Dependency Diagram" src="img/build_disable_recursion_example.png">
+![Class Dependency Diagram](https://github.com/amarula/dyndesign/blob/7664a4456271ccac2f0e27a276a754c2d7f7ec98/docs/img/build_disable_recursion_example.png?raw=true)
 
 The result is shown in te modified code below.
 
@@ -1401,7 +1403,7 @@ from the `argparse` package. This allows a Class Builder to be directly piped to
 script argument parser, establishing a **standardized approach for crafting
 scripts driven by custom options**.
 
-Below is a Python script that accepts `-a` and `-b` as options and constructs a
+Below is a Python script that accepts "-a" and "-b" as options and constructs a
 class based on those options.
 
 ``` py
@@ -1444,6 +1446,7 @@ $ python classbuilder_argparse.py -b
 I am the constructor of `P2`
 End of script `classbuilder_argparse.py`
 ```
+<br/>
 
 ## Lazy Import of Optional Modules
 
@@ -1553,7 +1556,7 @@ with requirements of code analyzers, it is advisable to access methods from
 dynamically-built parent classes using DynDesign constructs such as
 [decoratewith](../extended_class_communication#decoratewith),
 [safeinvoke](../extended_class_communication#safeinvoke), or
-[safezone](../extended_class_communication#safezone), as shown in the example in
+[safezone](../extended_class_communication#safezone-context-manager), as shown in the example in
 [Safely Using Methods From Dependent Classes as
 Decorators](#safely-using-methods-from-dependent-classes-as-decorators) section
 and in the example below.
