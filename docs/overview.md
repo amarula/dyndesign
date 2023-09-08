@@ -5,8 +5,8 @@ Dyndesign is a toolkit that offers developers the utmost flexibility in
 dynamically designing class structures.
 
 Dyndesign empowers developers to **build classes** by effortlessly incorporating
-class dependencies, including **parent and component** classes, through a set of
-configuration options. Dyndesign also provides the capability to **modify the
+class dependencies, including **parent** and **component** classes, through a set
+of configuration options. Dyndesign also provides the capability to **modify the
 inheritance hierarchy** of existing classes as well as to **merge classes** as
 though they were dictionaries.
 

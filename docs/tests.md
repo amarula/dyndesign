@@ -1,8 +1,12 @@
 # Running tests
 
-Use `pytest` to run the tests using your default python interpreter:
+Use `pytest` to run the tests using any python interpreter:
 
-    pip install -U pytest
-    python -m pytest test
+``` bash
+$ pip install -U pytest
+...
+
+$ python -m pytest
+```
 
 <br/>

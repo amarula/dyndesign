@@ -4,18 +4,21 @@ To complement the flexibility offered by the Dynamic Class Design tools, an
 additional set of tools is required to **safely extend communication between
 classes that may or may not be interconnected**.
 
-For example, classes may be interconnected through:
-- [Dynamic Class Building](../class_builder);
+For example, classes may be dynamically interconnected through:
+
+- [Class Builder](../class_builder), where a base class is dynamically connected
+  to parent and component classes to create a new class;
 - [Dynamic
-  Inheritance](../dynamic_class_design#dynamic-inheritance-with-live-updating-instances);
-- Composition, where one class contains an instance of another class as a
-  component or part of its implementation; or
+  Inheritance](../dynamic_class_design#dynamic-inheritance-with-live-updating-instances),
+  where one class dynamically inherits from another;
+- Class Composition, where one class is instantiated as a component of another
+  class; or
 - [Class Merging](../dynamic_class_design#class-merging), where two or more
-  classes are merged to create a new class using `mergeclasses`.
+  classes are merged to create a new class.
 
 Considering the optional nature of the interconnect types, the communication
 mechanism is designed to handle cases where a class may be not (yet)
-interconnected, suppressing any "missing" exceptions that may occur.
+interconnected, suppressing any related exceptions that may occur.
 
 ## decoratewith
 
@@ -496,7 +499,7 @@ safely invoke methods that may or may not exist at runtime.
 ### Syntax
 
 ``` py
-returned_value = safeinvoke("method_name", instance, fallback=fallback, *args, **kwargs)
+returned_value = safeinvoke("method_name", instance, *args, fallback=fallback, **kwargs)
 ```
 
 **Arguments:**

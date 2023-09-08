@@ -28,9 +28,10 @@ Overview
 Dyndesign is a toolkit that gives developers the ultimate flexibility in
 dynamically designing class structures.
 
-Here are examples of DynDesign's powerful tools in action.
+Here is an overview of DynDesign's tools.
 
-* Dynamically build a class using selected Building Options:
+* Dynamically build a class by adding parent and component classes to a Base class,
+  based on selected Building Options:
 
 .. code:: python
 
@@ -54,8 +55,8 @@ Here are examples of DynDesign's powerful tools in action.
     b.method_of_parent()
     b.comp.method_of_component()
 
-
-* Dynamically add parent classes:
+|
+* Dynamically add parent classes to a class:
 
 .. code:: python
 
@@ -71,7 +72,7 @@ Here are examples of DynDesign's powerful tools in action.
     c = Child()
     c.method_of_parent1()
 
-
+|
 * Merge two or more classes:
 
 .. code:: python
@@ -88,6 +89,7 @@ Here are examples of DynDesign's powerful tools in action.
     m = MergedClass()
     m.method_of_Ext1()
 
+|
 * Decorate a method with one or more instance methods loaded at runtime:
 
 .. code:: python
@@ -98,6 +100,7 @@ Here are examples of DynDesign's powerful tools in action.
     def decorated_method(self, ...):
         ...
 
+|
 * Safely invoke functions or methods from a ``safezone`` context manager or by
   using the ``safeinvoke`` API:
 
@@ -114,6 +117,7 @@ Here are examples of DynDesign's powerful tools in action.
     def method(self):
         safeinvoke("method_possibly_non_existent", self)
 
+|
 * Create and destroy Singleton classes:
 
 .. code:: python
@@ -128,6 +132,7 @@ Here are examples of DynDesign's powerful tools in action.
     Singleton().destroy_singleton()
     new_singleton_instance = Singleton(...)
 
+|
 * Import classes dynamically using the path:
 
 .. code:: python
