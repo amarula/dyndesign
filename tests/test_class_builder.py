@@ -126,11 +126,23 @@ def test_builder_inheritance_switch_option_2():
     assert instance.m3() == Cr.CLASS_B__M3, "Error overloading method `m3`"
 
 
-def test_builder_inheritance_switch_default_option():
+def test_builder_inheritance_switch_default_option_with_empty_set():
     """The built class is initialized with an empty option set, which causes it to inherit from the default class `C`,
     as determined by the 'selector' switch configuration.
     """
     BuiltClass = buildclass(BaseInheritanceSwitch)
+    instance = BuiltClass()
+    assert instance.a3 == Cr.CLASS_C__A3, "Error initializing attribute `a3`"
+    assert instance.m2() == Cr.CLASS_C__M2, "Error overloading method `m2`"
+    assert instance.m3() == Cr.CLASS_C__M3, "Error overloading method `m3`"
+
+
+def test_builder_inheritance_switch_default_option_with_option_outside():
+    """The built class is initialized with a 'selector' switch to `OPTION_3`, which is not among the available switch
+    case options. This causes the built class to inherit from the default class `C`, as determined by the 'selector'
+    switch configuration.
+    """
+    BuiltClass = buildclass(BaseInheritanceSwitch, selector=Mp.OPTION_3)
     instance = BuiltClass()
     assert instance.a3 == Cr.CLASS_C__A3, "Error initializing attribute `a3`"
     assert instance.m2() == Cr.CLASS_C__M2, "Error overloading method `m2`"

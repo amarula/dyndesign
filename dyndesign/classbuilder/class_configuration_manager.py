@@ -27,7 +27,6 @@ class ClassConfigurationManager:
         :param method_config: The configuration of potential components passed from method decorators.
         :param assigned_class_config: The global configuration settings assigned using `set_configuration`.
         """
-        self.__switches: Set = set()
         self.__default_switches: Set = set()
         self.class_importer = ClassImporter(global_config)
         self.__init_class_config(class_config, assigned_class_config)
@@ -104,7 +103,6 @@ class ClassConfigurationManager:
                             class_config[self.__get_switch_key(key, option_key)] = config
                     if not isinstance(class_config[key], ClassConfig):
                         class_config.pop(key)
-                    self.__switches.add(key)
         return class_config
 
     def __merge_method_config(self, method_config: List):
@@ -153,10 +151,13 @@ class ClassConfigurationManager:
 
         :param options: The configuration options to process.
         """
-        switches_to_add = {key for key in options.keys() if key in self.__switches}
-        for key in switches_to_add:
-            options[self.__get_switch_key(key, str(options[key]))] = True
-            options.pop(key)
+        switches_to_add = set()
+        for key in options.copy().keys():
+            compound_key = self.__get_switch_key(key, str(options[key]))
+            if compound_key in self.class_conf:
+                options[compound_key] = True
+                options.pop(key)
+                switches_to_add.add(key)
         for default_key in self.__default_switches:
             if default_key not in switches_to_add:
                 options[default_key] = True
