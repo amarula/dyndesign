@@ -1,5 +1,7 @@
 from typing import Any, Tuple
 
+from dyndesign.exceptions import NoMethodFound
+
 
 def tuplefy(item: Any) -> Tuple:
     """
@@ -38,3 +40,20 @@ def class_to_dict(obj: object) -> dict:
         if not key.startswith('__'):
             class_dict[key] = value
     return class_dict
+
+
+def invoke_first_method(obj: object, method_names: Tuple[str, ...], *args, **kwargs) -> Any:
+    """
+    Attempt to invoke a method from a tuple of method names on an object. The first method that is found is invoked and
+    its result is returned. If no method is found, an exception is raised.
+
+    :param obj: The object on which to invoke the methods.
+    :param method_names: The method names to try.
+    :param args: Positional arguments to be passed to each method.
+    :param kwargs: Keyword arguments to be passed to each method.
+    :return: The value returned by the first method found, if any.
+    """
+    for method_name in method_names:
+        if method := getattr(obj, method_name, None):
+            return method(*args, **kwargs)
+    raise NoMethodFound

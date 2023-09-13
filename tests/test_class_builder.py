@@ -1,5 +1,4 @@
 import pytest
-from types import SimpleNamespace
 
 from dyndesign import buildclass
 import dyndesign.exceptions as exc
@@ -469,6 +468,45 @@ def test_builder_composition_default_class():
     assert instance.comp.a2 == Cr.BASE_PARAM_1, "Error initializing attribute `comp.a2`"
     assert instance.comp.m1() == Cr.CLASS_B__M1, "Error overloading method `comp.m1`"
     assert instance.comp.m3() == Cr.CLASS_B__M3, "Error overloading method `comp.m3`"
+
+
+def test_builder_composition_component_list():
+    """The built class is initialized with 'option1' to True, which causes the `A` class to be instantiated as the
+    first item of a list in the 'comp' attribute, and 'option2' to True, which causes the `B` class to be
+    instantiated as the second item of the list.
+    """
+    BuiltClass = buildclass(BaseCompositionComponentList, option1=True, option2=True)
+    instance = BuiltClass(Cr.BASE_PARAM_1)
+    assert instance.comp_list[0].a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp_list[0].a1`"
+    assert instance.comp_list[0].m1() == Cr.CLASS_A__M1, "Error overloading method `comp_list[0].m1`"
+    assert instance.comp_list[1].a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp_list[1].a1`"
+    assert instance.comp_list[1].m1() == Cr.CLASS_B__M1, "Error overloading method `comp_list[1].m1`"
+
+
+def test_builder_composition_component_dict():
+    """The built class is initialized with 'option1' to True, which causes the `A` class to be instantiated as the
+    item "a" of a dictionary in the 'comp' attribute, and 'option2' to True, which causes the `B` class to be
+    instantiated as the item "b" of the dictionary.
+    """
+    BuiltClass = buildclass(BaseCompositionComponentDict, option1=True, option2=True)
+    instance = BuiltClass(Cr.BASE_PARAM_1)
+    assert instance.comp_dict['a'].a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp_dict['a'].a1`"
+    assert instance.comp_dict['a'].m1() == Cr.CLASS_A__M1, "Error overloading method `comp_dict['a'].m1`"
+    assert instance.comp_dict['b'].a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp_dict['b'].a1`"
+    assert instance.comp_dict['b'].m1() == Cr.CLASS_B__M1, "Error overloading method `comp_dict['b'].m1`"
+
+
+def test_builder_composition_component_simple_namespace():
+    """The built class is initialized with 'option1' to True, which causes the `A` class to be instantiated as the
+    attribute "a" of a Namespace object in the 'comp' attribute, and 'option2' to True, which causes the `B` class to be
+    instantiated as the attribute "b" of the Namespace object.
+    """
+    BuiltClass = buildclass(BaseCompositionComponentSimpleNamespace, option1=True, option2=True)
+    instance = BuiltClass(Cr.BASE_PARAM_1)
+    assert instance.comp_obj.a.a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp_obj.a.a1`"
+    assert instance.comp_obj.a.m1() == Cr.CLASS_A__M1, "Error overloading method `comp_obj.a.m1`"
+    assert instance.comp_obj.b.a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp_obj.b.a1`"
+    assert instance.comp_obj.b.m1() == Cr.CLASS_B__M1, "Error overloading method `comp_obj.b.m1`"
 
 
 def test_builder_composition_adapt_arguments():

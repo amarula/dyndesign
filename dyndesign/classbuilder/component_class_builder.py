@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, List, Set, Type, Union
 from .class_configuration_manager import ClassConfigurationManager
 from .class_builder_config import ClassConfig
 import dyndesign.exceptions as exc
-from dyndesign.utils.misc import tuplefy
 from dyndesign.dyninherit.dyninherit_base import safesuper
 from dyndesign.utils.inspector import is_invoking_method_in_one_line, is_method_not_defined_in_class
+from dyndesign.utils.misc import tuplefy, invoke_first_method
 from dyndesign.utils.signature import call_obj_with_adapted_args
 
 
@@ -107,6 +107,35 @@ class ComponentClassBuilder:
             and (component_conf.component_class, method, component_conf.component_attr) not in self.__COMPONENTS_APPLIED
         )
 
+    def __init_structured_component(self, obj: object, component_conf: ClassConfig, component_instance: object) -> Any:
+        """
+        If `structured_component_type` is specified, return an object of that type containing the component instance.
+
+        :param obj: The object to which the component will be added.
+        :param component_conf: The component configuration.
+        :param component_instance: The component instance to be added.
+        :return: An object of type `structured_component_type` if that setting is specified, `component_instance`
+                 otherwise.
+        """
+        if structured_component_type := self.__config_manager.get_global_setting(component_conf,
+                                                                                 'structured_component_type'):
+            struct_component = getattr(obj, component_conf.component_attr, None)
+            if not struct_component:
+                struct_component = structured_component_type()
+            if component_conf.structured_component_key:
+                try:
+                    invoke_first_method(struct_component, ('__setitem__', '__setattr__'),
+                                        component_conf.structured_component_key, component_instance)
+                except exc.NoMethodFound:
+                    raise exc.StructuredTypeError("Error instantiating `structured_component_type`")
+            else:
+                try:
+                    invoke_first_method(struct_component, ('append', 'add'), component_instance)
+                except exc.NoMethodFound:
+                    raise exc.StructuredTypeError("Error instantiating `structured_component_type`")
+            return struct_component
+        return component_instance
+
     def __add_selector_components(self, selectors: List[str], obj: object, method: str, *args,
                                   position: InjectionPosition, **kwargs):
         """
@@ -125,6 +154,7 @@ class ComponentClassBuilder:
                         self.__is_component_to_inject(component_conf, position, method)
                         and (component_instance := self.__init_component(obj, component_conf, *args, **kwargs))
                 ):
+                    component_instance = self.__init_structured_component(obj, component_conf, component_instance)
                     setattr(obj, component_conf.component_attr, component_instance)
                     self.__COMPONENTS_APPLIED.add(
                         (component_conf.component_class, method, component_conf.component_attr)

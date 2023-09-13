@@ -1,4 +1,5 @@
 from typing import Optional, Type
+from types import SimpleNamespace
 
 from dyndesign import dynconfig, safesuper, safeinvoke, safezone, ClassConfig, GlobalClassConfig
 from .sample_builder_components import *
@@ -143,6 +144,44 @@ class BaseCompositionUseComponent:
         self.comp: Type
         with safezone('comp'):
             self.comp.a2 = param_1
+
+
+class BaseCompositionComponentListConfigClass:
+    GLOBAL_DYNCONFIG = GlobalClassConfig(
+        component_attr="comp_list",
+        structured_component_type=list
+    )
+    option1 = ClassConfig(component_class=A)
+    option2 = ClassConfig(component_class=B)
+
+
+@dynconfig(BaseCompositionComponentListConfigClass)
+class BaseCompositionComponentList:
+    ...
+
+
+@dynconfig(
+    {
+        "option1": ClassConfig(component_class=A, structured_component_key="a"),
+        "option2": ClassConfig(component_class=B, structured_component_key="b"),
+    },
+    component_attr="comp_dict",
+    structured_component_type=dict
+)
+class BaseCompositionComponentDict:
+    ...
+
+
+@dynconfig(
+    {
+        "option1": ClassConfig(component_class=A, structured_component_key="a"),
+        "option2": ClassConfig(component_class=B, structured_component_key="b"),
+    },
+    component_attr="comp_obj",
+    structured_component_type=SimpleNamespace
+)
+class BaseCompositionComponentSimpleNamespace:
+    ...
 
 
 @dynconfig(

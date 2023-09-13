@@ -34,12 +34,17 @@ class ClassConfigMissingComponentInjectionMethod(Exception):
     """
 
 
-class DynConfigSetOptionWrongContext(Exception):
-    """Raised when `dynconfig.set_configuration` is used from outside the context of a configuration class.
+class StructuredTypeError(Exception):
+    """Raised when a `structured_component_type` of a `ClassConfig` node cannot be instantiated.
     """
 
 
 class DynConfigWrongClassType(Exception):
     """Raised when a class passed to `@dynconfig` decorator is neither a class nor a string (to be interpreted as a path
     to a class in dot notation).
+    """
+
+
+class NoMethodFound(Exception):
+    """Raised when none of the passed methods cannot be found in `invoke_first_method`.
     """
