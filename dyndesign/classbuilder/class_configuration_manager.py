@@ -1,125 +1,121 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Tuple, Union
 
 from .class_importer import ClassImporter, TypeClassOrPath
-from .class_builder_config import ClassConfig
+from .dependency_configuration import DependencyConfiguration
+from .class_configuration_unit import ClassConfigurationUnit
 from dyndesign.utils.misc import class_to_dict, tuplefy
 
 ClassConfigType = Union[Dict, TypeClassOrPath]
+MethodConfig = namedtuple("MethodConfig", ["method_name", "method_conf_unit"])
 
 
 class ClassConfigurationManager:
     """A utility class for loading and processing class configuration options."""
 
     __SWITCH_KEY_SEPARATOR = "_#=_"
-    __GLOBAL_CLASS_CONFIG_ATTRIBUTE = "GLOBAL_DYNCONFIG"
 
     SWITCH_DEFAULT = '_#!_SWITCH_DEFAULT'
+    DEFAULT_UNIT_ID = 0
 
-    def __init__(self, global_config: SimpleNamespace, class_config: ClassConfigType, method_config: Optional[List],
-                 assigned_class_config: Optional[Dict]):
+    def __init__(
+            self,
+            global_config: SimpleNamespace,
+            class_configs: Tuple[ClassConfigType, ...],
+            method_configs: Optional[List[MethodConfig]],
+            assigned_class_configs: Dict
+    ):
         """
         Initialize a ClassConfigurationManager instance.
 
         :param global_config: The global configuration.
-        :param class_config: The class configuration of the potential dependencies.
-        :param method_config: The configuration of potential components passed from method decorators.
-        :param assigned_class_config: The global configuration settings assigned using `set_configuration`.
+        :param class_configs: The user-defined class configurations of the potential dependencies.
+        :param method_configs: The configurations of potential components passed from method decorators.
+        :param assigned_class_configs: The global configuration settings assigned using `set_configuration`.
         """
         self.__default_switches: Set = set()
         self.class_importer = ClassImporter(global_config)
-        self.__init_class_config(class_config, assigned_class_config)
-        self.__init_global_config(global_config)
-        self.__process_class_config(method_config)
-
-    def __init_global_config(self, global_config: SimpleNamespace):
-        """
-        Initialize the global configuration using provided settings.
-
-        :param global_config: The global configuration options.
-        """
+        self.__assigned_class_configs = assigned_class_configs
+        self.__init_class_configs(class_configs)
         self.global_conf = global_config
-        if global_config_dict := self.class_conf.get(self.__GLOBAL_CLASS_CONFIG_ATTRIBUTE):
-            self.set_default_global_config(self.global_conf, global_config_dict)
+        self.__process_class_config(method_configs)
 
-    def __init_class_config(self, class_config: Union[Dict, TypeClassOrPath], assigned_class_config: Optional[Dict]):
+    def __get_class_config_unit(self, class_config: ClassConfigType) -> ClassConfigurationUnit:
         """
-        Initialize the class configuration for all the potential dependencies to be added using provided settings.
+        Get the initialized class configuration unit for the potential dependency.
 
-        :param class_config: The class configuration of the potential dependencies.
-        :param assigned_class_config: The global configuration settings assigned using `set_configuration`.
+        :param class_config: The user-defined configuration for which to initialize class dependency configurations.
+        :return: The initialized class configuration unit.
         """
         if not isinstance(class_config, dict):
+            assigned_class_config = self.__assigned_class_configs.get(getattr(class_config, '__name__', None))
             class_config = class_to_dict(self.class_importer.get_imported_class(class_config))
             class_config.update(assigned_class_config or {})
-        self.class_conf = defaultdict(list, class_config)
+        return ClassConfigurationUnit(class_config)
 
-    def __process_class_config(self, method_config: Optional[List]):
+    def __init_class_configs(self, class_configs: Tuple[ClassConfigType, ...]):
         """
-        Merge class and method configuration options, then sort the option selectors based on the provided order, if
-        any.
+        Initialize the class dependency configurations for all the potential dependencies to be added using the
+        user-defined class configurations.
 
-        :param method_config: The component configuration passed from method decorators.
+        :param class_configs: The user-defined configurations of the potential dependencies.
         """
-        self.class_conf.pop(self.__GLOBAL_CLASS_CONFIG_ATTRIBUTE, None)
-        self.class_conf = self.__transform_switches(self.class_conf)
-        if method_config:
-            self.__merge_method_config(method_config)
-        if self.global_conf.option_order:
-            self.option_selectors = sorted(
-                self.class_conf.keys(),
-                key=lambda i: self.global_conf.option_order.index(i)
-            )
-        else:
-            self.option_selectors = list(self.class_conf.keys())
+        self.class_configs = tuple(self.__get_class_config_unit(class_config) for class_config in class_configs)
+
+    def __process_class_config(self, method_configs: Optional[List[MethodConfig]]):
+        """
+        Merge class and method configurations, then populate the class configuration keys.
+
+        :param method_configs: The component configurations passed from method decorators.
+        """
+        for config_unit in self.class_configs:
+            config_unit.dependencies = self.__transform_switches(config_unit.dependencies)
+            if method_configs:
+                self.__merge_method_configs(method_configs)
+            config_unit.populate_dependency_keys(self.global_conf.option_order)
 
     @staticmethod
-    def __is_switch_configuration(selector_node: Any) -> bool:
+    def __is_switch_configuration(config_node: Any) -> bool:
         """
-        Check if a selector node represents a switch option configuration.
+        Check if a config node represents a switch option configuration.
 
-        :param selector_node: The selector node to check.
+        :param config_node: The config node to check.
         :return: True if the node represents a switch option, False otherwise.
         """
-        return isinstance(selector_node, Dict) and not isinstance(selector_node, ClassConfig)
+        return isinstance(config_node, Dict) and not isinstance(config_node, DependencyConfiguration)
 
     def __transform_switches(self, class_config: defaultdict) -> defaultdict:
         """
-        Transform a switch configuration into a set of boolean configurations, where each configuration represents
-        whether the corresponding option is selected or not.
+        Transform each switch configuration into a set of boolean configurations, where each boolean configuration
+        represents whether the corresponding option is selected or not.
 
-        :param class_config: The input class configuration.
-        :return: The transformed class configuration.
+        :param class_config: The dictionary of user-defined class configurations.
+        :return: The transformed class configurations.
         """
-        for key, values in class_config.copy().items():
-            for value in tuplefy(values):
-                if self.__is_switch_configuration(value):
-                    for option_key, config in value.items():
+        for dep_key, config_nodes in class_config.copy().items():
+            for config_node in tuplefy(config_nodes):
+                if self.__is_switch_configuration(config_node):
+                    for option_key, config in config_node.items():
                         if option_key == self.SWITCH_DEFAULT:
-                            self.__default_switches.add(key)
-                            class_config[key] = config
+                            self.__default_switches.add(dep_key)
+                            class_config[dep_key] = config
                         else:
-                            class_config[self.__get_switch_key(key, option_key)] = config
-                    if not isinstance(class_config[key], ClassConfig):
-                        class_config.pop(key)
+                            class_config[self.__get_switch_key(dep_key, option_key)] = config
+                    if not isinstance(class_config[dep_key], DependencyConfiguration):
+                        class_config.pop(dep_key)
         return class_config
 
-    def __merge_method_config(self, method_config: List):
+    def __merge_method_configs(self, method_configs: List[MethodConfig]):
         """
-        Merge the configuration passed from method decorators with the class configuration.
+        Merge the configurations passed from `@dynconfig` method decorators with the class configuration.
 
-        :param method_config: The component configuration passed from method decorators.
+        :param method_configs: The component configurations passed from method decorators.
         """
-        for config_node in method_config:
-            for key, values in self.__transform_switches(config_node.options).items():
-                for value in tuplefy(values):
-                    if value.component_class:
-                        value.injection_method = config_node.method
-                    try:
-                        self.class_conf[key].append(value)
-                    except AttributeError:
-                        self.class_conf[key] = [self.class_conf[key], value]
+        for method_config in method_configs:
+            for dep_key, dependencies in self.__transform_switches(method_config.method_conf_unit).items():
+                self.class_configs[self.DEFAULT_UNIT_ID].set_injection_method(dep_key, dependencies,
+                                                                              method_config.method_name)
 
     def __get_switch_key(self, key: str, option: Any) -> str:
         """
@@ -133,14 +129,14 @@ class ClassConfigurationManager:
 
     def get_default_class(self, class_config: Any) -> Optional[Type]:
         """
-        Get the default class from the class configuration, if any.
+        Get the default dependent class from the class configuration, if any.
 
         :param class_config: The class configuration.
         :return: The default class if any, None otherwise.
         """
         return (
             class_config.default_class or getattr(self.global_conf, "default_class", None)
-            if isinstance(class_config, ClassConfig)
+            if isinstance(class_config, DependencyConfiguration)
             else None
         )
 
@@ -152,46 +148,29 @@ class ClassConfigurationManager:
         :param options: The configuration options to process.
         """
         switches_to_add = set()
-        for key in options.copy().keys():
-            compound_key = self.__get_switch_key(key, str(options[key]))
-            if compound_key in self.class_conf:
+        all_keys = tuple(dep_key for cc in self.class_configs for dep_key in cc.dependencies)
+        for opt_key, option in options.copy().items():
+            compound_key = self.__get_switch_key(opt_key, str(option))
+            if compound_key in all_keys:
                 options[compound_key] = True
-                options.pop(key)
-                switches_to_add.add(key)
-        for default_key in self.__default_switches:
-            if default_key not in switches_to_add:
-                options[default_key] = True
+                options.pop(opt_key)
+                switches_to_add.add(opt_key)
+        options.update((key, True) for key in self.__default_switches if key not in switches_to_add)
 
-    def get_global_setting(self, dependent_class_conf: ClassConfig, key: str) -> Any:
+    def get_global_setting(self, dependency_config: DependencyConfiguration, key: str) -> Any:
         """
-        Get a global setting for a dependent class.
+        Get a global setting for a class dependency configuration.
 
-        :param dependent_class_conf: The configuration of the dependent class.
+        :param dependency_config: The dependency configuration.
         :param key: The setting's key.
         :return: The global setting value.
         """
-        return getattr(dependent_class_conf, key, self.global_conf.__dict__[key])
+        return getattr(dependency_config, key, self.global_conf.__dict__[key])
 
-    @staticmethod
-    def set_default_global_config(global_config: SimpleNamespace, defaults: Optional[List]):
+    def set_default_global_config(self, config_unit: ClassConfigurationUnit):
         """
-        Set default non-empty values in a global configuration dictionary.
+        Set default non-empty values in a global configuration dictionary from the local configuration of a unit.
 
-        :param global_config: The global configuration dictionary to set defaults in.
-        :param defaults: The default values.
+        :param config_unit: The configuration unit of the potential dependencies.
         """
-        for key, value in defaults.__dict__.items():
-            if value is not None:
-                global_config.__dict__[key] = value
-
-    @staticmethod
-    def set_default_class_config(class_config: ClassConfig, defaults: SimpleNamespace):
-        """
-        Set default values in a class configuration if the corresponding keys do not exist.
-
-        :param class_config: The class configuration to set defaults in.
-        :param defaults: The default values.
-        """
-        for key, value in defaults.__dict__.items():
-            if hasattr(class_config, key) and getattr(class_config, key) is None:
-                setattr(class_config, key, value)
+        self.global_conf.__dict__.update((k, v) for k, v in config_unit.local_config.items() if v is not None)

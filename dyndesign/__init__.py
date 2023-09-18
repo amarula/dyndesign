@@ -1,4 +1,4 @@
-from .classbuilder.class_builder_config import ClassConfig, GlobalClassConfig
+from .classbuilder.exposed_class_config import ClassConfig, LocalClassConfig
 from .classbuilder.dynamic_configuration import buildclass, dynconfig
 from .classmerger import mergeclasses
 from .dyninherit.dyninherit import DynInheritance

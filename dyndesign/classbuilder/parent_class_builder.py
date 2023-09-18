@@ -8,7 +8,7 @@ class ParentClassBuilder:
         """
         Initialize the ParentClassBuilder instance.
 
-        :param base_class: The base class to be configured.
+        :param base_class: The base class upon which to build the new class.
         :param configure_dependent_class_callback: A callback invoked to recursively configure the parent classes.
         """
         self.__parent_classes = [base_class]
@@ -17,9 +17,9 @@ class ParentClassBuilder:
         if base_class.__bases__ != (object,):
             self.__parent_classes += base_class.__bases__
 
-    def add_parent_classes(self, parent_classes: Any):
+    def select_parent_classes(self, parent_classes: Any):
         """
-        Add parent classes to the list of base classes to be used in the built class.
+        Add parent classes to the list of selected base classes to be used in the built class.
 
         :param parent_classes: The parent class or tuple of parent classes to add.
         """

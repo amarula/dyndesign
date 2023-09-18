@@ -1,7 +1,7 @@
 from typing import Optional, Type
 from types import SimpleNamespace
 
-from dyndesign import dynconfig, safesuper, safeinvoke, safezone, ClassConfig, GlobalClassConfig
+from dyndesign import dynconfig, safesuper, safeinvoke, safezone, ClassConfig, LocalClassConfig
 from .sample_builder_components import *
 from ..testing_results import ClassResults as Cr, MiscParams as Mp
 
@@ -147,7 +147,7 @@ class BaseCompositionUseComponent:
 
 
 class BaseCompositionComponentListConfigClass:
-    GLOBAL_DYNCONFIG = GlobalClassConfig(
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(
         component_attr="comp_list",
         structured_component_type=list
     )
@@ -275,6 +275,16 @@ class BaseCompositionCustomInlineMethodsAdvancedLoadAllAfter:
         return self.comp.m3()
 
 
+@dynconfig({
+    "selector1": {
+        Mp.OPTION_1: ClassConfig(component_class=A),
+        Mp.OPTION_2: ClassConfig(component_class=B),
+    },
+    "DYNDESIGN_LOCAL_CONFIG": LocalClassConfig(component_attr="comp")
+})
+class BaseCompositionFakeSelectorSwitch:
+    ...
+
 @dynconfig()
 class BaseCompositionCustomInlineMethodsSwitch:
     @dynconfig({
@@ -367,9 +377,10 @@ class BaseCompositionAdaptArgumentsFromSelf:
             component_attr="comp",
             component_class=H,
             init_args_keep_first=1,
-            init_args_from_self="a2_alt"),
-    },
-    add_components_after_method=True
+            init_args_from_self="a2_alt"
+        ),
+        "DYNDESIGN_LOCAL_CONFIG": LocalClassConfig(add_components_after_method=True)
+    }
 )
 class BaseCompositionAdaptArgumentsFilter:
     def __init__(self, param1, param2):
@@ -466,7 +477,7 @@ class BaseInheritanceCompositionClassConfigured:
 
 
 class BaseCompositionConfigClass:
-    GLOBAL_DYNCONFIG = GlobalClassConfig(component_attr="comp")
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(component_attr="comp")
 
     option1 = ClassConfig(component_class=A)
     option2 = ClassConfig(component_class=B)
@@ -491,7 +502,7 @@ class BaseCompositionClassConfiguredWithConditions:
 
 
 class BaseCompositionConfigClassWithLambdaConditions:
-    GLOBAL_DYNCONFIG = GlobalClassConfig(default_class=B)
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(default_class=B)
 
     dynconfig.set_configuration(
         lambda option1, option2: option1 and option2,
@@ -508,6 +519,20 @@ class BaseCompositionClassConfiguredWithLambdaConditions:
 class BaseInheritanceCompositionClassConfigurationImported:
     def m1(self):
         return hasattr(self, 'comp')
+
+
+@dynconfig(BaseCompositionConfigClass, BaseCompositionComponentListConfigClass)
+class BaseCompositionMultipleConfigurators:
+    ...
+
+
+@dynconfig(
+    BaseCompositionConfigClassWithLambdaConditions,
+    {"option1": ClassConfig(component_class=A)},
+    component_attr="comp2",
+)
+class BaseCompositionMultipleMixedConfiguration:
+    ...
 
 
 dynconfig.set_global(add_components_after_method=True)

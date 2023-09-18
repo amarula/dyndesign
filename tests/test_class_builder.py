@@ -26,12 +26,22 @@ def test_builder_inheritance():
     assert instance.m4() is None, "Error calling method `m4`"
 
 
-def test_builder_inheritance_empty():
+def test_builder_inheritance_empty_option_set():
     """This test is similar to the preceding test, but the option set is empty.
     """
     BuiltClass = buildclass(BaseInheritance, {})
     instance = BuiltClass(Cr.BASE_PARAM_1)
     assert instance.INTEGRITY_CHECK == Cr.INTEGRITY_CHECK_1, "Base class has changed after building"
+    assert instance.a2 == Cr.BASE_PARAM_1, "Error initializing attribute `a2`"
+    assert instance.m4() is None, "Error calling method `m4`"
+
+
+def test_builder_inheritance_non_existent_option():
+    """This test is similar to the preceding test, but built class is initialized with an option which is not set in the
+    class configuration.
+    """
+    BuiltClass = buildclass(BaseInheritance, non_exitent_option=True)
+    instance = BuiltClass(Cr.BASE_PARAM_1)
     assert instance.a2 == Cr.BASE_PARAM_1, "Error initializing attribute `a2`"
     assert instance.m4() is None, "Error calling method `m4`"
 
@@ -395,7 +405,7 @@ def test_builder_composition_custom_adding_method_inline_and_inherited():
     1- the `A` class to be instantiated as the component 'comp' after the `__init__` method;
     2- the built class to inherit from the `G` class;
     3- the component 'comp' to be overwritten by a new instance of `B` class before the `m2` method;
-    4- a new instance of `A` class to be assigned to 'comp2' before `m2` method;
+    4- a new instance of `A` class to be assigned to 'comp2' before `m2` method.
     """
     BuiltClass = buildclass(BaseInheritanceCompositionCustomInlineMethodsAdvanced, {"option1": True, "option2": True})
     instance = BuiltClass(Cr.BASE_PARAM_1, optional=Cr.CLASS_G__O1, kwonly=Cr.CLASS_G__K1)
@@ -438,9 +448,19 @@ def test_builder_composition_custom_adding_method_inline_load_all_after():
     assert instance.m3() == Cr.CLASS_B__M3, "Error re-overloading method `comp.m3`"
 
 
+def test_builder_inheritance_composition_switch():
+    """The built class is initialized with a 'fake_selector' switch to 'OPTION_1' and with 'selector1' switch to
+    `OPTION_2`, which causes the `B` class to be instantiated as the component 'comp'.
+    """
+    BuiltClass = buildclass(BaseCompositionFakeSelectorSwitch, fake_selector=Mp.OPTION_1, selector1=Mp.OPTION_2)
+    instance = BuiltClass()
+    assert instance.comp.a1 == Cr.CLASS_B__A1, "Error initializing attribute `a1`"
+    assert instance.comp.m1() == Cr.CLASS_B__M1, "Error overloading method `m1`"
+
+
 def test_builder_composition_custom_adding_method_inline_switch():
     """The built class is initialized with 'selector' switch to `OPTION_1`, which causes the `A` class to be
-    instantiated as the component 'comp' before the `__init__` method;
+    instantiated as the component 'comp' before the `__init__` method.
     """
     BuiltClass = buildclass(BaseCompositionCustomInlineMethodsSwitch, {"selector": Mp.OPTION_1})
     instance = BuiltClass()
@@ -633,7 +653,7 @@ def test_builder_composition_recursive_static_base():
 
 def test_builder_composition_recursive_static():
     """The `BaseCompositionRecursiveStatic` class incorporates a static component named `BaseComposition`. Upon
-    initializing it with the `option1` configured as True, an additional dynamic component `B` is instantiated. The
+    building it with the `option1` configured as True, an additional dynamic component `B` is instantiated. The
     `BaseComposition` class is recursively built with the same 'option1' to True through an explicit call to
     `buildclass`, which causes the `A` class to be instantiated as the component 'comp_base.comp'.
     """
@@ -800,6 +820,40 @@ def test_builder_composition_config_class_with_lambda_conditions():
     BuiltClass = buildclass(BaseCompositionClassConfiguredWithLambdaConditions, {"option1": True, "option2": True})
     instance = BuiltClass()
     assert instance.comp.a1 == Cr.CLASS_A__A1, "Error initializing attribute `a1`"
+
+
+def test_builder_composition_multiple_configurators():
+    """The `BaseCompositionMultipleConfigurators` class is configured using the configurator classes
+    `BaseCompositionConfigClass` and `BaseCompositionComponentListConfigClass`. When BuiltClass is built with both
+    `option1` and `option2` configured as True, the configurations of both configurator classes are applied
+    sequentially.
+    """
+    BuiltClass = buildclass(BaseCompositionMultipleConfigurators, option1=True, option2=True)
+    instance = BuiltClass()
+    assert instance.comp.a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp.a1`"
+    assert instance.comp.m1() == Cr.CLASS_B__M1, "Error overloading method `comp.m1`"
+    assert not hasattr(instance.comp, 'm2'), "Method `m2` should not be here"
+    assert instance.comp.m3() == Cr.CLASS_B__M3, "Error overloading method `comp.m3`"
+    assert instance.comp_list[0].a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp_list[0].a1`"
+    assert instance.comp_list[0].m1() == Cr.CLASS_A__M1, "Error overloading method `comp_list[0].m1`"
+    assert instance.comp_list[1].a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp_list[1].a1`"
+    assert instance.comp_list[1].m1() == Cr.CLASS_B__M1, "Error overloading method `comp_list[1].m1`"
+
+
+def test_builder_composition_multiple_mixed_configuration():
+    """This test is similar to the preceding test, but `BaseCompositionMultipleMixedConfiguration` class is
+    configured using configurator class `BaseCompositionConfigClassWithLambdaConditions` as first configuration unit,
+    and a dictionary as second.
+    """
+    BuiltClass = buildclass(BaseCompositionMultipleMixedConfiguration, option1=True)
+    instance = BuiltClass()
+    assert instance.comp.a1 == Cr.CLASS_B__A1, "Error initializing attribute `comp.a1`"
+    assert instance.comp.m1() == Cr.CLASS_B__M1, "Error overloading method `comp.m1`"
+    assert instance.comp.m3() == Cr.CLASS_B__M3, "Error overloading method `comp.m3`"
+    assert instance.comp2.a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp2.a1`"
+    assert instance.comp2.a2 == Cr.CLASS_A__A2, "Error initializing attribute `comp2.a2`"
+    assert instance.comp2.m1() == Cr.CLASS_A__M1, "Error overloading method `comp2.m1`"
+    assert instance.comp2.m2() == Cr.CLASS_A__M2, "Error overloading method `comp2.m2`"
 
 
 def test_builder_global_config():

@@ -2,9 +2,9 @@ from collections import defaultdict
 from types import FunctionType, SimpleNamespace
 from typing import Any, Callable, Dict, Type, Optional, Union
 
+from .exposed_class_config import ClassConfig
 from .class_builder import ClassBuilder
-from .class_builder_config import ClassConfig
-from .class_configuration_manager import ClassConfigurationManager, ClassConfigType
+from .class_configuration_manager import ClassConfigurationManager, ClassConfigType, MethodConfig
 from .class_storage import ClassStorage
 from .settings import CLASS_BUILDER_DEFAULT_CONFIG
 import dyndesign.exceptions as exc
@@ -20,20 +20,20 @@ class DynamicConfiguration:
     __CLASS_GLOBAL_CONFIG: Dict = {}
     __CLASS_OPTION_MAP: Dict = {}
     __METHOD_CONFIG_MAP: Dict = defaultdict(list)
-    __ASSIGNED_CLASS_CONFIG: Dict = defaultdict(dict)
+    __ASSIGNED_CLASS_CONFIGS: Dict = defaultdict(dict)
 
     SWITCH_DEFAULT = ClassConfigurationManager.SWITCH_DEFAULT
 
-    def __init__(self, class_config: Optional[ClassConfigType] = None, **global_config):
+    def __init__(self, *class_configs: ClassConfigType, **global_config):
         """
         Initialize the DynamicConfiguration instance.
 
-        :param class_config: The class configuration of potential dependencies.
+        :param class_configs: One or more class configurations of potential dependencies.
         :param global_config: The global configuration settings.
         """
         config = {**CLASS_BUILDER_DEFAULT_CONFIG, **self.__CLASS_GLOBAL_CONFIG, **global_config}
         self.__global_config = SimpleNamespace(**config)
-        self.__class_config = class_config or {}
+        self.__class_configs = class_configs or ({},)
 
     def __call__(self, obj: Any) -> Any:
         """
@@ -45,16 +45,16 @@ class DynamicConfiguration:
         """
         if isinstance(obj, FunctionType):
             class_name = get_dot_basename(obj.__qualname__)
-            self.__METHOD_CONFIG_MAP[class_name].append(SimpleNamespace(
-                method=obj.__name__,
-                options=self.__class_config,
+            self.__METHOD_CONFIG_MAP[class_name].append(MethodConfig(
+                obj.__name__,
+                self.__class_configs[ClassConfigurationManager.DEFAULT_UNIT_ID],
             ))
         else:
             self.__config_manager = ClassConfigurationManager(
                 self.__global_config,
-                self.__class_config,
+                self.__class_configs,
                 self.__METHOD_CONFIG_MAP.get(obj.__name__),
-                self.__ASSIGNED_CLASS_CONFIG.get(getattr(self.__class_config, '__name__', None)),
+                self.__ASSIGNED_CLASS_CONFIGS,
             )
             ClassStorage.config_map[obj] = ClassBuilder(obj, self.__config_manager)
         return obj
@@ -98,7 +98,7 @@ class DynamicConfiguration:
         :param class_config: The class configuration to be assigned to the option.
         """
         try:
-            cls.__ASSIGNED_CLASS_CONFIG[get_class_name(back_frame())][option] = class_config
+            cls.__ASSIGNED_CLASS_CONFIGS[get_class_name(back_frame())][option] = class_config
         except KeyError:
             raise exc.BuildConfigWithoutOptions(
                 'The "dynconfig.set_configuration" method must be used from within a configuration class'

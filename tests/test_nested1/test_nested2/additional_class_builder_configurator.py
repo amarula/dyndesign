@@ -1,9 +1,9 @@
-from dyndesign import ClassConfig, GlobalClassConfig
+from dyndesign import ClassConfig, LocalClassConfig
 from ...samples.sample_builder_components import A, B
 
 
 class BICConfigClass:
-    GLOBAL_DYNCONFIG = GlobalClassConfig(
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(
         injection_method='m1',
         add_components_after_method=True
     )

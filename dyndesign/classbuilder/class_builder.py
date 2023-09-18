@@ -1,6 +1,6 @@
-from typing import Callable, Dict, List, Type, Union
+from typing import Callable, Dict, Type, Union
 
-from .class_builder_config import ClassConfig
+from .dependency_configuration import DependencyConfiguration
 from .class_configuration_manager import ClassConfigurationManager
 from .class_importer import TypeClassOrPath
 from .class_storage import ClassStorage
@@ -21,27 +21,27 @@ class ClassBuilder:
         """
         Initialize a ClassBuilder instance.
 
-        :param base_class: The base class to be configured.
+        :param base_class: The base class upon which to build the new class.
         :param config_manager: An instance of ClassConfigurationManager for loading class configuration.
         """
         self.__base_class = base_class
         self.__config_manager = config_manager
 
-    def __is_option_selected(self, selector: Union[Callable, str]) -> bool:
+    def __is_option_selected(self, dependency_key: Union[Callable, str]) -> bool:
         """
-        Check if a configuration selector is enabled through the class options.
+        Check if a configuration dependency key is enabled through the class options.
 
-        :param selector: The configuration selector to check.
-        :return: True if the selector is enabled, False otherwise.
+        :param dependency_key: The configuration dependency key to check.
+        :return: True if the dependency key is enabled, False otherwise.
         """
-        if isinstance(selector, (staticmethod, classmethod)):
-            selector = selector.__func__
-        if callable(selector):
-            args = get_arguments(selector).args
-            values = (self.__CLASS_OPTIONS.get(arg, getattr(self.__base_class, arg, None)) for arg in args)
-            return selector(*values)
+        if isinstance(dependency_key, (staticmethod, classmethod)):
+            dependency_key = dependency_key.__func__
+        if callable(dependency_key):
+            func_args = get_arguments(dependency_key).args
+            args = (self.__CLASS_OPTIONS.get(f_arg, getattr(self.__base_class, f_arg, None)) for f_arg in func_args)
+            return dependency_key(*args)
         else:
-            return bool(self.__CLASS_OPTIONS.get(selector))
+            return bool(self.__CLASS_OPTIONS.get(dependency_key))
 
     def __configure_dependent_class(self, dependent_class: TypeClassOrPath) -> Type:
         """
@@ -71,24 +71,24 @@ class ClassBuilder:
             self.__configure_dependent_class
         )
 
-    def __prepare_class_dependency(self, option_selector: List[str], is_option_selected: bool,
-                                   dependent_class_config: ClassConfig):
+    def __prepare_class_dependency(self, dependency_key: str, is_option_selected: bool,
+                                   dependency_config: DependencyConfiguration):
         """
         Prepare a dependent classes to be added to the base class based on the class configuration and whether the
         corresponding configuration option is selected or not.
 
-        :param option_selector: The option selector corresponding to the component to be potentially added.
+        :param dependency_key: The key corresponding to the component to be potentially added.
         :param is_option_selected: Whether the configuration option is selected or not.
-        :param dependent_class_config: The class configuration of the dependent class to be added.
+        :param dependency_config: The class configuration of the dependent class to be added.
         """
-        default_class = self.__config_manager.get_default_class(dependent_class_config)
+        default_class = self.__config_manager.get_default_class(dependency_config)
         if is_option_selected or default_class:
-            if dependent_class_config.inherit_from:
-                parent_class = dependent_class_config.inherit_from if is_option_selected else default_class
-                self.__parent_class_builder.add_parent_classes(parent_class)
-            elif dependent_class_config.component_class:
-                dependent_class_config.is_option_selected = is_option_selected
-                self.__component_class_builder.select_component_class(option_selector, dependent_class_config)
+            if dependency_config.inherit_from:
+                parent_class = dependency_config.inherit_from if is_option_selected else default_class
+                self.__parent_class_builder.select_parent_classes(parent_class)
+            elif dependency_config.component_class:
+                dependency_config.is_option_selected = is_option_selected
+                self.__component_class_builder.select_component_class(dependency_key, dependency_config)
             else:
                 # This is a fallback in case the `ClassConfigMissingDependency` exception is not raised when validating
                 # the `ClassConfig` object.
@@ -98,10 +98,12 @@ class ClassBuilder:
         """
         Prepare the dependent classes to be added to the base class based on the selected options.
         """
-        for option_selector in self.__config_manager.option_selectors:
-            is_option_selected = self.__is_option_selected(option_selector)
-            for dependent_class_config in tuplefy(self.__config_manager.class_conf[option_selector]):
-                self.__prepare_class_dependency(option_selector, is_option_selected, dependent_class_config)
+        for config_unit in self.__config_manager.class_configs:
+            self.__config_manager.set_default_global_config(config_unit)
+            for dependency_key in config_unit.dependency_keys:
+                is_option_selected = self.__is_option_selected(dependency_key)
+                for dependency_config in tuplefy(config_unit.dependencies[dependency_key]):
+                    self.__prepare_class_dependency(dependency_key, is_option_selected, dependency_config)
 
     def configure_class(self, options: Dict) -> Type:
         """

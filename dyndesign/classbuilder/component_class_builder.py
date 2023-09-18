@@ -2,8 +2,8 @@ from collections import defaultdict
 from enum import IntEnum, auto
 from typing import Any, Callable, Dict, List, Set, Type, Union
 
+from .dependency_configuration import DependencyConfiguration
 from .class_configuration_manager import ClassConfigurationManager
-from .class_builder_config import ClassConfig
 import dyndesign.exceptions as exc
 from dyndesign.dyninherit.dyninherit_base import safesuper
 from dyndesign.utils.inspector import is_invoking_method_in_one_line, is_method_not_defined_in_class
@@ -40,47 +40,49 @@ class ComponentClassBuilder:
         self.__methods_to_patch: defaultdict = defaultdict(list)
         self.patched_methods: Dict = {}
 
-    def __init_component(self, obj: object, component_conf: ClassConfig, *args, **kwargs) -> Union[Callable, None]:
+    def __init_component(self, obj: object, component_config: DependencyConfiguration, *args, **kwargs)\
+            -> Union[Callable, None]:
         """
         Create a component instance by modifying the arguments of the injection method that are passed to the
         component's __init__ method, based on the given configuration. The component class is also configured so that
         all its potential dependent classes are recursively configured.
 
         :param obj: The object to which the component will be added.
-        :param component_conf: The configuration of the component to be instantiated.
+        :param component_config: The configuration of the component to be instantiated.
         :param args: Positional arguments to be passed to `__init__`.
         :param kwargs: Keyword arguments to be passed to `__init__`.
         :return: The component instance if the component is instantiated, None otherwise.
         """
         add_args = []
         add_kwargs = {}
-        if component_conf.init_args_keep_first:
-            args = args[0:component_conf.init_args_keep_first]
-        if component_conf.init_args_from_self:
-            for arg_name in tuplefy(component_conf.init_args_from_self):
+        if component_config.init_args_keep_first:
+            args = args[0:component_config.init_args_keep_first]
+        if component_config.init_args_from_self:
+            for arg_name in tuplefy(component_config.init_args_from_self):
                 if hasattr(obj, arg_name):
                     add_args.append(getattr(obj, arg_name))
-        if component_conf.init_kwargs_from_self:
-            for kwarg_key, kwarg_name in component_conf.init_kwargs_from_self.items():
+        if component_config.init_kwargs_from_self:
+            for kwarg_key, kwarg_name in component_config.init_kwargs_from_self.items():
                 if hasattr(obj, kwarg_name):
                     add_kwargs[kwarg_key] = getattr(obj, kwarg_name)
         component_class = (
-            component_conf.component_class if component_conf.is_option_selected
-            else self.__config_manager.get_default_class(component_conf)
+            component_config.component_class if component_config.is_option_selected
+            else self.__config_manager.get_default_class(component_config)
         )
         return call_obj_with_adapted_args(
             self.__configure_dependent_class(component_class),
             None,
             *args, *add_args,
-            strict_missing_args=bool(component_conf.strict_missing_args),
+            strict_missing_args=bool(component_config.strict_missing_args),
             **add_kwargs, **kwargs
         )
 
-    def __is_the_right_injection_position(self, component_conf: ClassConfig, position: InjectionPosition) -> bool:
+    def __is_the_right_injection_position(self, component_config: DependencyConfiguration,
+                                          position: InjectionPosition) -> bool:
         """
         Determine if the component must be injected in the given position based on the configuration or not.
 
-        :param component_conf: The component configuration.
+        :param component_config: The component configuration.
         :param position: The injection position.
         :return: True if the injection is in the right position, False otherwise.
         """
@@ -88,93 +90,106 @@ class ComponentClassBuilder:
             position == InjectionPosition.MIDDLE
             or (
                 (position == InjectionPosition.BEFORE)
-                ^ bool(self.__config_manager.get_global_setting(component_conf, 'add_components_after_method'))
+                ^ bool(self.__config_manager.get_global_setting(component_config, 'add_components_after_method'))
             )
         )
 
-    def __is_component_to_inject(self, component_conf: ClassConfig, position: InjectionPosition, method: str) -> bool:
+    def __is_component_already_applied(self, component_config: DependencyConfiguration, method: str) -> bool:
+        """
+        Check whether the component configuration has been already applied or not.
+
+        :param component_config: The component configuration.
+        :param method: The method name.
+        :return: True if the component has been applied, False otherwise.
+        """
+        return (component_config.component_class, method, component_config.component_attr) in self.__COMPONENTS_APPLIED
+
+    def __is_component_to_inject(self, component_config: DependencyConfiguration, position: InjectionPosition,
+                                 method: str) -> bool:
         """
         Check whether the component must be injected or not.
 
-        :param component_conf: The component configuration.
+        :param component_config: The component configuration.
         :param position: The injection position.
         :param method: The method name.
         :return: True if the component must be injected, False otherwise.
         """
         return bool(
-            self.__is_the_right_injection_position(component_conf, position)
-            and component_conf.injection_method and method == component_conf.injection_method
-            and (component_conf.component_class, method, component_conf.component_attr) not in self.__COMPONENTS_APPLIED
+            self.__is_the_right_injection_position(component_config, position)
+            and component_config.injection_method and method == component_config.injection_method
+            and not self.__is_component_already_applied(component_config, method)
         )
 
-    def __init_structured_component(self, obj: object, component_conf: ClassConfig, component_instance: object) -> Any:
-        """
-        If `structured_component_type` is specified, return an object of that type containing the component instance.
+    @staticmethod
+    def __add_instance_to_structure(struct_component, method_names, *args):
+        try:
+            invoke_first_method(struct_component, method_names, *args)
+        except exc.NoMethodFound:
+            raise exc.StructuredTypeError("Error instantiating `structured_component_type`")
 
-        :param obj: The object to which the component will be added.
-        :param component_conf: The component configuration.
+    def __init_structured_component(self, component_instance: Callable, obj: object,
+                                    component_config: DependencyConfiguration) -> Any:
+        """
+        If `structured_component_type` global setting is specified, return an object of that type containing the
+        component instance.
+
         :param component_instance: The component instance to be added.
+        :param obj: The object to which the component will be added.
+        :param component_config: The component configuration.
         :return: An object of type `structured_component_type` if that setting is specified, `component_instance`
                  otherwise.
         """
-        if structured_component_type := self.__config_manager.get_global_setting(component_conf,
+        if structured_component_type := self.__config_manager.get_global_setting(component_config,
                                                                                  'structured_component_type'):
-            struct_component = getattr(obj, component_conf.component_attr, None)
+            struct_component = getattr(obj, component_config.component_attr, None)
             if not struct_component:
                 struct_component = structured_component_type()
-            if component_conf.structured_component_key:
-                try:
-                    invoke_first_method(struct_component, ('__setitem__', '__setattr__'),
-                                        component_conf.structured_component_key, component_instance)
-                except exc.NoMethodFound:
-                    raise exc.StructuredTypeError("Error instantiating `structured_component_type`")
+            if component_config.structured_component_key:
+                self.__add_instance_to_structure(struct_component, ('__setitem__', '__setattr__'),
+                                                 component_config.structured_component_key, component_instance)
             else:
-                try:
-                    invoke_first_method(struct_component, ('append', 'add'), component_instance)
-                except exc.NoMethodFound:
-                    raise exc.StructuredTypeError("Error instantiating `structured_component_type`")
+                self.__add_instance_to_structure(struct_component, ('append', 'add'), component_instance)
             return struct_component
         return component_instance
 
-    def __add_selector_components(self, selectors: List[str], obj: object, method: str, *args,
-                                  position: InjectionPosition, **kwargs):
+    def __add_component(self, component_config: DependencyConfiguration, obj: object, method: str, *args,
+                        position: InjectionPosition, **kwargs):
         """
-        Add selector-specified components to the object based on configuration.
+        Add a component to the object based on the component configuration.
 
-        :param selectors: The list of component selectors.
-        :param obj: The object to which components will be added.
+        :param component_config: The component configuration.
+        :param obj: The object to which the components are being added.
         :param method: The method to which the components are being added.
         :param args: Positional arguments used to initialize the component classes.
         :param position: The injection position.
         :param kwargs: Keyword arguments used to initialize the component classes.
         """
-        for selector in selectors:
-            for component_conf in tuplefy(self.__config_manager.class_conf[selector]):
-                if (
-                        self.__is_component_to_inject(component_conf, position, method)
-                        and (component_instance := self.__init_component(obj, component_conf, *args, **kwargs))
-                ):
-                    component_instance = self.__init_structured_component(obj, component_conf, component_instance)
-                    setattr(obj, component_conf.component_attr, component_instance)
-                    self.__COMPONENTS_APPLIED.add(
-                        (component_conf.component_class, method, component_conf.component_attr)
-                    )
-
-    def __validate_component_configuration(self, class_config: ClassConfig):
-        """
-        Validate the class component configuration.
-
-        :param class_config: The class component configuration to be validated.
-        """
-        if not class_config.component_attr:
-            raise exc.ClassConfigMissingComponentAttr(
-                "ClassConfig configurator must include the 'component_attr' field if the 'component_class' field is "
-                "present"
+        if (
+                self.__is_component_to_inject(component_config, position, method)
+                and (component_instance := self.__init_component(obj, component_config, *args, **kwargs))
+        ):
+            component_instance = self.__init_structured_component(component_instance, obj, component_config)
+            setattr(obj, component_config.component_attr, component_instance)
+            self.__COMPONENTS_APPLIED.add(
+                (component_config.component_class, method, component_config.component_attr)
             )
-        if not hasattr(self.__base_class, str(class_config.injection_method)):
-            raise exc.ClassConfigMissingComponentInjectionMethod(
-                "The method specified in the 'injection_method' field does not exist in the base class"
-            )
+
+    def __add_key_components(self, dependency_keys: List[str], obj: object, method: str, *args,
+                             position: InjectionPosition, **kwargs):
+        """
+        Add the components selected through the dependency_keys to the object based on configuration.
+
+        :param dependency_keys: The list of component dependency keys.
+        :param obj: The object to which the components are being added.
+        :param method: The method to which the components are being added.
+        :param args: Positional arguments used to initialize the component classes.
+        :param position: The injection position.
+        :param kwargs: Keyword arguments used to initialize the component classes.
+        """
+        for dependency_key in dependency_keys:
+            for config_unit in self.__config_manager.class_configs:
+                for component_config in tuplefy(config_unit.dependencies[dependency_key]):
+                    self.__add_component(component_config, obj, method, *args, position=position, **kwargs)
 
     def __invoke_injection_method(self, method: str, obj: object, *args, **kwargs) -> Any:
         """
@@ -200,29 +215,29 @@ class ComponentClassBuilder:
             return call_obj_with_adapted_args(injection_method, obj, *args, strict_missing_args=True, **kwargs)
         return None
 
-    def __has_components_explicitly_injected(self, selectors: List[str], method: str) -> bool:
+    def __has_components_explicitly_injected(self, dependency_keys: List[str], method: str) -> bool:
         """
         If a method has a call to the component injector, record it to be processed in `explicitly_inject_components`.
 
-        :param selectors: The list of component selectors.
+        :param dependency_keys: The list of component dependency keys.
         :param method: The method name.
         :return: True if the method has a call to the component injector, False otherwise.
         """
         method_instance = getattr(self.__base_class, method)
         if is_invoking_method_in_one_line(method_instance, "dynconfig.inject_components"):
-            self.__EXPLICIT_METHOD_INJECTION[method] = selectors
+            self.__EXPLICIT_METHOD_INJECTION[method] = dependency_keys
             self.patched_methods[method] = method_instance
             return True
         return False
 
-    def __patch_methods(self, selectors: List[str], method: str) -> None:
+    def __patch_method(self, dependency_keys: List[str], method: str) -> None:
         """
         Patch a method by injecting components before or after its execution.
 
-        :param selectors: The list of component selectors.
+        :param dependency_keys: The list of dependency keys related to the components to be injected.
         :param method: The method name.
         """
-        if self.__has_components_explicitly_injected(selectors, method):
+        if self.__has_components_explicitly_injected(dependency_keys, method):
             return
 
         def patched_method(obj: object, *args, **kwargs) -> Any:
@@ -236,28 +251,30 @@ class ComponentClassBuilder:
             :param kwargs: Keyword arguments used to initialize the component class and to pass to the injection method.
             :return: The result of the method invocation.
             """
-            self.__add_selector_components(selectors, obj, method, *args, position=InjectionPosition.BEFORE, **kwargs)
+            self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.BEFORE, **kwargs)
             returned_value = self.__invoke_injection_method(method, obj, *args, **kwargs)
-            self.__add_selector_components(selectors, obj, method, *args, position=InjectionPosition.AFTER, **kwargs)
+            self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.AFTER, **kwargs)
             return returned_value
 
         self.patched_methods[method] = patched_method
 
-    def select_component_class(self, option_selector: List[str], class_config: ClassConfig):
+    def select_component_class(self, dependency_key: str, component_config: DependencyConfiguration):
         """
         Select the component classes to be injected based on the configuration.
 
-        :param option_selector: The configuration option selector.
-        :param class_config: The configuration of the component class.
+        :param dependency_key: The key of the component class to be added.
+        :param component_config: The configuration of the component class.
         """
-        self.__config_manager.set_default_class_config(class_config, self.__config_manager.global_conf)
-        self.__validate_component_configuration(class_config)
-        self.__methods_to_patch[class_config.injection_method].append(option_selector)
+        component_config.set_default_class_config(self.__config_manager.global_conf)
+        component_config.validate_component_configuration(self.__base_class)
+        self.__methods_to_patch[component_config.injection_method].append(dependency_key)
 
     def inject_components_before_or_after_methods(self):
-        """Inject component classes before or after corresponding methods based on the configuration."""
-        for method, selectors in self.__methods_to_patch.items():
-            self.__patch_methods(selectors, method)
+        """
+        Inject component classes before or after corresponding methods based on the configuration.
+        """
+        for method, dependency_keys in self.__methods_to_patch.items():
+            self.__patch_method(dependency_keys, method)
 
     def explicitly_inject_components(self, obj: object, method: str, *args, **kwargs):
         """
@@ -269,5 +286,5 @@ class ComponentClassBuilder:
         :param args: Positional arguments used to initialize the component class.
         :param kwargs: Keyword arguments used to initialize the component class.
         """
-        selectors = self.__EXPLICIT_METHOD_INJECTION[method]
-        self.__add_selector_components(selectors, obj, method, *args, position=InjectionPosition.MIDDLE, **kwargs)
+        dependency_keys = self.__EXPLICIT_METHOD_INJECTION[method]
+        self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.MIDDLE, **kwargs)
