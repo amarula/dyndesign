@@ -390,6 +390,17 @@ class BaseCompositionAdaptArgumentsFilter:
 
 
 @dynconfig({
+    "option1": ClassConfig(
+        component_attr="comp",
+        component_class=H,
+        init_args_from_option=True
+    )
+})
+class BaseCompositionAdaptArgumentsFromOption:
+    ...
+
+
+@dynconfig({
     "option1": ClassConfig(component_attr="comp_base", component_class=BaseComposition),
 })
 class BaseCompositionRecursive:

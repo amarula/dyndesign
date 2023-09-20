@@ -1,6 +1,6 @@
 from collections import defaultdict, namedtuple
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional, Set, Type, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Type, Tuple, Union
 
 from .class_importer import ClassImporter, TypeClassOrPath
 from .dependency_configuration import DependencyConfiguration
@@ -8,6 +8,7 @@ from .class_configuration_unit import ClassConfigurationUnit
 from dyndesign.utils.misc import class_to_dict, tuplefy
 
 ClassConfigType = Union[Dict, TypeClassOrPath]
+DependencyKeyType = Union[Callable, str]
 MethodConfig = namedtuple("MethodConfig", ["method_name", "method_conf_unit"])
 
 

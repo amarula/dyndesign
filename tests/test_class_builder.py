@@ -607,8 +607,8 @@ def test_builder_composition_adapt_arguments_from_self():
 
 def test_builder_composition_adapt_arguments_filter():
     """The built class is initialized with 'option1' to True, which causes the `H` class to be instantiated after the
-    `__init__` method as the components 'comp'. The class `H` is instantiated by excluding positional arguments
-    beyond the initial one, and subsequently adding an extra positional parameter derived from the attributes of `self`.
+    `__init__` method as the component 'comp'. The class `H` is instantiated by excluding positional arguments beyond
+    the initial one, and subsequently adding an extra positional parameter derived from the attributes of `self`.
     """
     BuiltClass = buildclass(BaseCompositionAdaptArgumentsFilter, {"option1": True})
     instance = BuiltClass(
@@ -623,6 +623,18 @@ def test_builder_composition_adapt_arguments_filter():
     assert instance.comp.param_2 == Cr.BASE_PARAM_2_ALT, "Error initializing attribute `comp_H.param_2`"
     assert instance.comp.optional_2 == Cr.CLASS_H__O2, "Error initializing attribute `comp_H.optional_2`"
     assert instance.comp.kwonly_2 == Cr.CLASS_H__K2, "Error initializing attribute `comp_H.kwonly_2`"
+
+
+def test_builder_composition_adapt_arguments_from_option():
+    """The built class is initialized with the 'option1' Building Option set to 'BASE_PARAM_1', which causes the `H`
+    class to be instantiated after the `__init__` method as the component 'comp'. The class `H` is instantiated with
+    the 'option1' value as first positional parameter, and with an extra positional parameter derived from the
+    attributes of `self`.
+    """
+    BuiltClass = buildclass(BaseCompositionAdaptArgumentsFromOption, option1=Cr.BASE_PARAM_1)
+    instance = BuiltClass(Cr.BASE_PARAM_2)
+    assert instance.comp.param_1 == Cr.BASE_PARAM_1, "Error initializing attribute `comp_H.param_1`"
+    assert instance.comp.param_2 == Cr.BASE_PARAM_2, "Error initializing attribute `comp_H.param_2`"
 
 
 def test_builder_composition_recursive():

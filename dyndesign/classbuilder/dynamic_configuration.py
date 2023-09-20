@@ -1,10 +1,10 @@
 from collections import defaultdict
 from types import FunctionType, SimpleNamespace
-from typing import Any, Callable, Dict, Type, Optional, Union
+from typing import Any, Dict, Type, Optional
 
 from .exposed_class_config import ClassConfig
 from .class_builder import ClassBuilder
-from .class_configuration_manager import ClassConfigurationManager, ClassConfigType, MethodConfig
+from .class_configuration_manager import ClassConfigurationManager, ClassConfigType, DependencyKeyType, MethodConfig
 from .class_storage import ClassStorage
 from .settings import CLASS_BUILDER_DEFAULT_CONFIG
 import dyndesign.exceptions as exc
@@ -90,7 +90,7 @@ class DynamicConfiguration:
         cls.__CLASS_GLOBAL_CONFIG.update(kwargs)
 
     @classmethod
-    def set_configuration(cls, option: Union[Callable, str], class_config: ClassConfig):
+    def set_configuration(cls, option: DependencyKeyType, class_config: ClassConfig):
         """
         Assign a class configuration to an option from within a configurator class.
 

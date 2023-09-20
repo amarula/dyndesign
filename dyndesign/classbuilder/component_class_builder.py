@@ -1,9 +1,9 @@
 from collections import defaultdict
 from enum import IntEnum, auto
-from typing import Any, Callable, Dict, List, Set, Type, Union
+from typing import Any, Callable, Dict, List, Set, Tuple, Type, Union
 
 from .dependency_configuration import DependencyConfiguration
-from .class_configuration_manager import ClassConfigurationManager
+from .class_configuration_manager import ClassConfigurationManager, DependencyKeyType
 import dyndesign.exceptions as exc
 from dyndesign.dyninherit.dyninherit_base import safesuper
 from dyndesign.utils.inspector import is_invoking_method_in_one_line, is_method_not_defined_in_class
@@ -34,14 +34,25 @@ class ComponentClassBuilder:
         :param configure_dependent_class_callback: A callback invoked to recursively configure the component classes.
         """
         self.__COMPONENTS_APPLIED = set()
+        self.__args: Tuple = ()
+        self.__kwargs: Dict = {}
         self.__base_class = base_class
         self.__config_manager = config_manager
         self.__configure_dependent_class = configure_dependent_class_callback
         self.__methods_to_patch: defaultdict = defaultdict(list)
         self.patched_methods: Dict = {}
 
-    def __init_component(self, obj: object, component_config: DependencyConfiguration, *args, **kwargs)\
-            -> Union[Callable, None]:
+    def __set_arguments(self, args: Tuple, kwargs: Dict):
+        """
+        Set the positional and keyword arguments to be used to initialize the component classes.
+
+        :param args: Positional arguments used to initialize the component classes.
+        :param kwargs: Keyword arguments used to initialize the component classes.
+        """
+        self.__args = args
+        self.__kwargs = kwargs
+
+    def __init_component(self, obj: object, component_config: DependencyConfiguration) -> Union[Callable, None]:
         """
         Create a component instance by modifying the arguments of the injection method that are passed to the
         component's __init__ method, based on the given configuration. The component class is also configured so that
@@ -49,14 +60,14 @@ class ComponentClassBuilder:
 
         :param obj: The object to which the component will be added.
         :param component_config: The configuration of the component to be instantiated.
-        :param args: Positional arguments to be passed to `__init__`.
-        :param kwargs: Keyword arguments to be passed to `__init__`.
         :return: The component instance if the component is instantiated, None otherwise.
         """
-        add_args = []
+        add_args = list(self.__args)
         add_kwargs = {}
         if component_config.init_args_keep_first:
-            args = args[0:component_config.init_args_keep_first]
+            add_args = add_args[0:component_config.init_args_keep_first]
+        if component_config.init_args_from_option:
+            add_args.insert(0, component_config.option_selected)
         if component_config.init_args_from_self:
             for arg_name in tuplefy(component_config.init_args_from_self):
                 if hasattr(obj, arg_name):
@@ -66,15 +77,15 @@ class ComponentClassBuilder:
                 if hasattr(obj, kwarg_name):
                     add_kwargs[kwarg_key] = getattr(obj, kwarg_name)
         component_class = (
-            component_config.component_class if component_config.is_option_selected
+            component_config.component_class if component_config.option_selected
             else self.__config_manager.get_default_class(component_config)
         )
         return call_obj_with_adapted_args(
             self.__configure_dependent_class(component_class),
             None,
-            *args, *add_args,
+            *add_args,
             strict_missing_args=bool(component_config.strict_missing_args),
-            **add_kwargs, **kwargs
+            **add_kwargs, **self.__kwargs
         )
 
     def __is_the_right_injection_position(self, component_config: DependencyConfiguration,
@@ -152,21 +163,19 @@ class ComponentClassBuilder:
             return struct_component
         return component_instance
 
-    def __add_component(self, component_config: DependencyConfiguration, obj: object, method: str, *args,
-                        position: InjectionPosition, **kwargs):
+    def __add_component(self, component_config: DependencyConfiguration, obj: object, method: str,
+                        position: InjectionPosition):
         """
         Add a component to the object based on the component configuration.
 
         :param component_config: The component configuration.
         :param obj: The object to which the components are being added.
         :param method: The method to which the components are being added.
-        :param args: Positional arguments used to initialize the component classes.
         :param position: The injection position.
-        :param kwargs: Keyword arguments used to initialize the component classes.
         """
         if (
                 self.__is_component_to_inject(component_config, position, method)
-                and (component_instance := self.__init_component(obj, component_config, *args, **kwargs))
+                and (component_instance := self.__init_component(obj, component_config))
         ):
             component_instance = self.__init_structured_component(component_instance, obj, component_config)
             setattr(obj, component_config.component_attr, component_instance)
@@ -174,32 +183,27 @@ class ComponentClassBuilder:
                 (component_config.component_class, method, component_config.component_attr)
             )
 
-    def __add_key_components(self, dependency_keys: List[str], obj: object, method: str, *args,
-                             position: InjectionPosition, **kwargs):
+    def __add_key_components(self, dependency_keys: List[str], obj: object, method: str, position: InjectionPosition):
         """
         Add the components selected through the dependency_keys to the object based on configuration.
 
         :param dependency_keys: The list of component dependency keys.
         :param obj: The object to which the components are being added.
         :param method: The method to which the components are being added.
-        :param args: Positional arguments used to initialize the component classes.
         :param position: The injection position.
-        :param kwargs: Keyword arguments used to initialize the component classes.
         """
         for dependency_key in dependency_keys:
             for config_unit in self.__config_manager.class_configs:
                 for component_config in tuplefy(config_unit.dependencies[dependency_key]):
-                    self.__add_component(component_config, obj, method, *args, position=position, **kwargs)
+                    self.__add_component(component_config, obj, method, position=position)
 
-    def __invoke_injection_method(self, method: str, obj: object, *args, **kwargs) -> Any:
+    def __invoke_injection_method(self, method: str, obj: object) -> Any:
         """
         Invoke the injection method with adapted arguments. The arguments of the injection method may need to be
         modified to include additional or different arguments that are required by the component's __init__ constructor.
 
         :param method: The method name.
         :param obj: The object on which the method is invoked.
-        :param args: Positional arguments used to initialize the component class and to pass to the injection method.
-        :param kwargs: Keyword arguments used to initialize the component class and to pass to the injection method.
         :return: The result of the method invocation.
         """
         injection_method = getattr(self.__base_class, method)
@@ -212,7 +216,8 @@ class ComponentClassBuilder:
                     obj = None
                 else:
                     return None
-            return call_obj_with_adapted_args(injection_method, obj, *args, strict_missing_args=True, **kwargs)
+            return call_obj_with_adapted_args(injection_method, obj, *self.__args, strict_missing_args=True,
+                                              **self.__kwargs)
         return None
 
     def __has_components_explicitly_injected(self, dependency_keys: List[str], method: str) -> bool:
@@ -251,14 +256,15 @@ class ComponentClassBuilder:
             :param kwargs: Keyword arguments used to initialize the component class and to pass to the injection method.
             :return: The result of the method invocation.
             """
-            self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.BEFORE, **kwargs)
-            returned_value = self.__invoke_injection_method(method, obj, *args, **kwargs)
-            self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.AFTER, **kwargs)
+            self.__set_arguments(args, kwargs)
+            self.__add_key_components(dependency_keys, obj, method, position=InjectionPosition.BEFORE)
+            returned_value = self.__invoke_injection_method(method, obj)
+            self.__add_key_components(dependency_keys, obj, method, position=InjectionPosition.AFTER)
             return returned_value
 
         self.patched_methods[method] = patched_method
 
-    def select_component_class(self, dependency_key: str, component_config: DependencyConfiguration):
+    def select_component_class(self, dependency_key: DependencyKeyType, component_config: DependencyConfiguration):
         """
         Select the component classes to be injected based on the configuration.
 
@@ -287,4 +293,5 @@ class ComponentClassBuilder:
         :param kwargs: Keyword arguments used to initialize the component class.
         """
         dependency_keys = self.__EXPLICIT_METHOD_INJECTION[method]
-        self.__add_key_components(dependency_keys, obj, method, *args, position=InjectionPosition.MIDDLE, **kwargs)
+        self.__set_arguments(args, kwargs)
+        self.__add_key_components(dependency_keys, obj, method, position=InjectionPosition.MIDDLE)

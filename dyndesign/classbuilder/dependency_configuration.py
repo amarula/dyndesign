@@ -19,7 +19,7 @@ class DependencyConfiguration:
         """
         self.validate_class_config(class_config)
         self.__attributes = class_config.__dict__
-        self.is_option_selected = False
+        self.option_selected = None
 
     def __getattr__(self, name: str) -> Any:
         """
