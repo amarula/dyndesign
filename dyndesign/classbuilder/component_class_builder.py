@@ -67,7 +67,7 @@ class ComponentClassBuilder:
         if component_config.init_args_keep_first:
             add_args = add_args[0:component_config.init_args_keep_first]
         if component_config.init_args_from_option:
-            add_args.insert(0, component_config.option_selected)
+            add_args.insert(0, component_config.selected_option)
         if component_config.init_args_from_self:
             for arg_name in tuplefy(component_config.init_args_from_self):
                 if hasattr(obj, arg_name):
@@ -77,7 +77,7 @@ class ComponentClassBuilder:
                 if hasattr(obj, kwarg_name):
                     add_kwargs[kwarg_key] = getattr(obj, kwarg_name)
         component_class = (
-            component_config.component_class if component_config.option_selected
+            component_config.component_class if component_config.must_be_added
             else self.__config_manager.get_default_class(component_config)
         )
         return call_obj_with_adapted_args(

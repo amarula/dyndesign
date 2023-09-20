@@ -19,7 +19,8 @@ class DependencyConfiguration:
         """
         self.validate_class_config(class_config)
         self.__attributes = class_config.__dict__
-        self.option_selected = None
+        self.selected_option = None
+        self.must_be_added = False
 
     def __getattr__(self, name: str) -> Any:
         """
@@ -35,6 +36,16 @@ class DependencyConfiguration:
         Raise an `AttributeError` exception if `append` is called in a DependencyConfiguration instance.
         """
         raise AttributeError
+
+    def setup(self, selected_option: Any, force_add: bool):
+        """
+        Set up the configuration for a Class Dependency.
+
+        :param selected_option: The value of the Building Option associated with this dependency.
+        :param force_add: Whether this dependency must be added or not regardless of the Building Options passed.
+        """
+        self.selected_option = selected_option
+        self.must_be_added = bool(selected_option) or force_add
 
     def set_default_class_config(self, defaults: SimpleNamespace):
         """

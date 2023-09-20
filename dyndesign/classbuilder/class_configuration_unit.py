@@ -1,6 +1,6 @@
 from collections import defaultdict
 from types import SimpleNamespace
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Generator, List, Tuple
 
 from dyndesign.utils.misc import tuplefy
 from .exposed_class_config import ClassConfig
@@ -21,7 +21,7 @@ class ClassConfigurationUnit:
 
         :param class_config: the user-defined configuration used to initialize the class configuration unit.
         """
-        self.dependencies = defaultdict(list, self.__get_dependencies(class_config))
+        self.dependencies = defaultdict(list, self.__retrieve_dependencies(class_config))
         self.dependency_keys: List[str] = []
         self.local_config = self.dependencies.pop(self.__LOCAL_CLASS_CONFIG_ATTRIBUTE, SimpleNamespace()).__dict__
 
@@ -43,7 +43,7 @@ class ClassConfigurationUnit:
         else:
             return config_item
 
-    def __get_dependencies(self, class_config: Dict) -> Dict:
+    def __retrieve_dependencies(self, class_config: Dict) -> Dict:
         """
         Retrieve a class configuration dictionary where each ClassConfig instance from a user-defined configuration
         is used to initialize an in-place DependencyConfiguration instance.
@@ -64,6 +64,15 @@ class ClassConfigurationUnit:
             self.dependencies[dep_key].append(DependencyConfiguration(dependency))  # type: ignore
         except AttributeError:
             self.dependencies[dep_key] = [self.dependencies[dep_key], DependencyConfiguration(dependency)]
+
+    def get_dependencies(self, dep_key: str) -> Generator[DependencyConfiguration, None, None]:
+        """
+        Get all canonical dependencies associated to a dependency key.
+
+        :param dep_key: The dependency key to be queried.
+        :return: The canonical dependencies associated to the key.
+        """
+        return (d for d in tuplefy(self.dependencies[dep_key]) if isinstance(d, DependencyConfiguration))
 
     def set_injection_method(self, dep_key: str, dependencies: Tuple[DependencyConfiguration, ...], method_name: str):
         """

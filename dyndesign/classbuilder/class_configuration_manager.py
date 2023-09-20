@@ -1,6 +1,6 @@
 from collections import defaultdict, namedtuple
 from types import SimpleNamespace
-from typing import Any, Callable, Dict, List, Optional, Set, Type, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 from .class_importer import ClassImporter, TypeClassOrPath
 from .dependency_configuration import DependencyConfiguration
@@ -128,19 +128,6 @@ class ClassConfigurationManager:
         """
         return self.__SWITCH_KEY_SEPARATOR.join((key, str(option)))
 
-    def get_default_class(self, class_config: Any) -> Optional[Type]:
-        """
-        Get the default dependent class from the class configuration, if any.
-
-        :param class_config: The class configuration.
-        :return: The default class if any, None otherwise.
-        """
-        return (
-            class_config.default_class or getattr(self.global_conf, "default_class", None)
-            if isinstance(class_config, DependencyConfiguration)
-            else None
-        )
-
     def transform_options(self, options: Dict):
         """
         Transform a switch option into a set of boolean options, so that they are compatible with the corresponding
@@ -167,6 +154,28 @@ class ClassConfigurationManager:
         :return: The global setting value.
         """
         return getattr(dependency_config, key, self.global_conf.__dict__[key])
+
+    def get_default_global_config(self, dependency_config: Any, key: str) -> Any:
+        """
+        Get a default global setting for a class dependency configuration, if any.
+
+        :param dependency_config: The dependency configuration.
+        :param key: The setting's key.
+        :return: The global setting value if any, None otherwise.
+        """
+        try:
+            return getattr(dependency_config, key, None) or getattr(self.global_conf, key, None)
+        except KeyError:
+            return None
+
+    def get_default_class(self, class_config: Any) -> Any:
+        """
+        Get the default dependent class from the class configuration, if any.
+
+        :param class_config: The class configuration.
+        :return: The default class if any, None otherwise.
+        """
+        return self.get_default_global_config(class_config, "default_class")
 
     def set_default_global_config(self, config_unit: ClassConfigurationUnit):
         """

@@ -127,6 +127,13 @@ class BaseCompositionNoInit:
 
 
 @dynconfig({
+    "option1": ClassConfig(component_attr="comp", component_class=A, force_add=True),
+})
+class BaseCompositionForceAdd:
+    ...
+
+
+@dynconfig({
     "option1": (
             ClassConfig(component_attr="comp", component_class=A),
             ClassConfig(component_attr="comp2", component_class=B),

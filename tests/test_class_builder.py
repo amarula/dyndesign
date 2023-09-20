@@ -289,6 +289,17 @@ def test_builder_composition_multiple_distinct_components_no_init():
     assert instance.comp2.m3() == Cr.CLASS_B__M3, "Error overloading method `comp2.m3`"
 
 
+def test_builder_composition_multiple_distinct_components_force_add():
+    """The built class is initialized no options, which causes the `A` class to be still instantiated as the
+    component 'comp', due to the 'force_add' setting being set to True.
+    """
+    BuiltClass = buildclass(BaseCompositionForceAdd)
+    instance = BuiltClass()
+    assert instance.comp.a1 == Cr.CLASS_A__A1, "Error initializing attribute `comp.a1`"
+    assert instance.comp.m1() == Cr.CLASS_A__M1, "Error overloading method `comp.m1`"
+
+
+
 def test_builder_composition_multiple_components_per_option():
     """The built class is initialized with 'option1' to True. This results in the instantiation of both the `A` class
     as the 'comp' component and the `B` class as the 'comp2' component.

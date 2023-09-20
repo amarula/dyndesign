@@ -15,6 +15,7 @@ class BaseConfig:
     component_attr: str = None  # type: ignore
     injection_method: Optional[str] = None
     add_components_after_method: Optional[bool] = None
+    force_add: Optional[bool] = None
     structured_component_type: Optional[Type] = None
     structured_component_key: Optional[str] = None
     init_args_from_option: Optional[bool] = None

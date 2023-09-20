@@ -7,7 +7,6 @@ from .class_storage import ClassStorage
 from .parent_class_builder import ParentClassBuilder
 from .component_class_builder import ComponentClassBuilder
 from dyndesign.utils.inspector import get_arguments
-from dyndesign.utils.misc import tuplefy
 from dyndesign.exceptions import ClassConfigMissingDependency
 
 
@@ -80,9 +79,9 @@ class ClassBuilder:
         :param dependency_config: The class configuration of the dependent class to be added.
         """
         default_class = self.__config_manager.get_default_class(dependency_config)
-        if dependency_config.option_selected or default_class:
+        if dependency_config.must_be_added or default_class:
             if dependency_config.inherit_from:
-                parent_class = dependency_config.inherit_from if dependency_config.option_selected else default_class
+                parent_class = dependency_config.inherit_from if dependency_config.must_be_added else default_class
                 self.__parent_class_builder.select_parent_classes(parent_class)
             elif dependency_config.component_class:
                 self.__component_class_builder.select_component_class(dependency_key, dependency_config)
@@ -98,9 +97,12 @@ class ClassBuilder:
         for config_unit in self.__config_manager.class_configs:
             self.__config_manager.set_default_global_config(config_unit)
             for dependency_key in config_unit.dependency_keys:
-                option_selected = self.__get_option_value(dependency_key)
-                for dependency_config in tuplefy(config_unit.dependencies[dependency_key]):
-                    dependency_config.option_selected = option_selected
+                selected_option = self.__get_option_value(dependency_key)
+                for dependency_config in config_unit.get_dependencies(dependency_key):
+                    dependency_config.setup(
+                        selected_option,
+                        self.__config_manager.get_default_global_config(dependency_config, "force_add")
+                    )
                     self.__prepare_class_dependency(dependency_key, dependency_config)
 
     def configure_class(self, options: Dict) -> Type:
