@@ -1,41 +1,35 @@
 # Class Builder
 
-Class Builder is an impressive module that makes it easy to **build classes by
-simply providing a set of configuration settings**.
+Class Builder is an impressive module that allows Python developers to **build
+classes by simply specifying a configuration**.
 
 The primary objective of Class Builder is to completely **separate** the code
 responsible for **class configuration** from **the core logic** of the classes.
-Thanks to a set of ad hoc tools, Python developers can now define a set of
-possible configurations for a Base class in terms of **Parent** and **Component**
-Class Dependencies. They can then build classes based on the Base class by
-selecting one or more Building Options.
+Thanks to a set of ad hoc tools, developers can now define a set of possible
+configurations for a Base class in terms of **Parent** and **Component** Class
+Dependencies. They can then build new classes based on the Base class by selecting
+one or more Building Options.
 
-The first step involves configuring a Base class with a comprehensive set of
-potential configurations, grouped by Building Options. These Options include
-**Boolean Options**, which can result in either a True or False value, and
-**Switch Options**, which enable the selection of one of a set of alternative
-choices.
+The first step involves associating a comprehensive set of potential class
+configurations with a Base class. This can be achieved by employing the
+`dynconfig` decorator, which allows for three distinct levels of separation
+between class configuration and core logic:
 
-The class configuration is achieved through the `dynconfig` decorator, offering
-three distinct levels of separation between class configuration and core logic:
-
-1. the class configuration can be encapsulated within a Configurator class that
+1. the class configuration can be encapsulated within Configurator classes that
    can be associated with the Base class using `dynconfig` as a class decorator,
-1. the class configuration can be passed to `dynconfig` class decorator as
-   argument, or
-1. `dynconfig` can also function as method decorator to configure component
-   injection within specific methods.
+1. the class configuration can be directly passed to `dynconfig` class decorator
+   as argument, or
+1. `dynconfig` can also function as method decorator to configure inline component
+   injections within specific methods.
 
-The second and final step involves building a class with the selected Class
+The second and final step involves building a class with selected Class
 Dependencies using the `buildclass` function.
 
 ## Getting Started
 
-A Configurator class can be linked to a Base class through the `dynconfig`
-decorator. Once the Base class is configured, a new class can be built by passing
-the Base class and one or more Building Options to `buildclass`. The Building
-Options will determine which Class Dependencies are added to the newly built
-class.
+A Configurator class is linked to a Base class through the `dynconfig` decorator.
+Once the Base class is configured, a new class can be built by passing the Base
+class one or more Building Options as `buildclass` arguments.
 
 ``` py
 @dynconfig(Configurator)
@@ -45,11 +39,15 @@ class Base:
 BuiltClass = buildclass(Base, bool_option=True, switch="switch_option1")
 ```
 
-The Configurator class defines the building configurations for any possible value
-of the Building Options. To achieve this, the Option names are used as a class
-attribute names to which the corresponding `ClassConfig` instances are assigned as
-values. Each `ClassConfig` instance defines a Class Dependency of either
-**Parent** or **Component** type.
+Each Building Option determines which Class Dependencies are added to the newly
+built class.
+
+The Configurator class defines the class configurations for a set of potential
+values of the Building Options. Each potential Option, referred to as a
+"Configuration Option" in the context of class configuration, is used as a class
+attribute to which a corresponding Class Dependency is assigned as value. Class
+Dependencies, defined as `ClassConfig` instances, specify Class Dependencies of
+either **Parent** or **Component** type.
 
 ``` py
 class Configurator:
@@ -60,47 +58,110 @@ class Configurator:
         'switch_option2': ClassConfig(inherit_from=ParentB),
     }
 ```
-In the provided example, if "bool_option" is set to True a Component class is
-injected into the built class. Furthermore, if a "switch" selector is selected as
+In the provided example, if the "bool_option" is set to True a Component class is
+injected into the built class. Furthermore, if the "switch" selector is set to
 "switch_option1" the built class inherits from a ParentA class. Conversely, if
 "switch" is set to "switch_option2" the built class inherits from a ParentB class.
 
-Considering the Options passed to `buildclass` in the first code snippet, the
-resulting BuiltClass incorporates the Component class in the "comp" attribute and
-inherits from the ParentA class.
+Considering the Building Options passed to `buildclass` in the first code snippet,
+the resulting BuiltClass incorporates the Component class in the "comp" attribute
+and inherits from the ParentA class.
 
 ## Syntax
 
-### buildclass
+### buildclass and @dynconfig
 
 The syntax of the `buildclass` function is defined as following.
 
 ``` py
 BuiltClass = buildclass(
     BaseClass,
-    option1=val1, option2=val2, ... | {"option1": val1, ...} | obj_with_dict
+    {"option1": val1, "option2": val2, ...} | building_option_object,
+    option3=val3, option4=val4, ...
 )
 ```
 
-The Base class can be provided as the first argument, while the Building Options
-can be provided as keyword arguments or as dictionaries passed as the second
-arguments. It is worth noting that any object with a `__dict__` attribute can be
-used to configure the Building Options. This broadens the scope to include various
-types of objects, including the return value of the `parse_args` method from the
-`argparse` package, as shown in the [Integration with
-argparse](#integration-with-argparse) section.
+**Arguments:**
+
+- **BaseClass**: Type  
+    The Base class upon which to build the new class.<br/><br/>
+
+- **Building Options**: Dict *or* Object *and/or* Keyword Arguments *(Optional)*  
+    The Building Options can be provided as a dictionary or as any other object
+    with a `__dict__` attribute. This broadens the scope to include various types
+    of objects, including the return value of the `parse_args` method from the
+    `argparse` package, as shown in the [Integration with
+    argparse](#integration-with-argparse) section. Alternatively/additionally,
+    Building Options can be provided directly as keyword arguments.<br/><br/>
+
+- **return**: Type  
+    The new class built based on the Building Options.<br/><br/>
+
+The Base class is decorated with `@dynconfig` to specify all the potential class
+configurations.
+
+``` py
+@dynconfig(
+    ConfiguratorClass1 | 'path.to.ConfiguratorClass1' | {<configuration_dict_1>},
+    ConfiguratorClass2 | 'path.to.ConfiguratorClass2' | {<configuration_dict_2>},
+    ...
+    local_base_setting1 = value1,
+    local_base_setting2 = value2,
+    ...
+)
+class Base:
+    ...
+```
+
+**Arguments of dynconfig Class Decorator:**
+
+- **Configuration Units**: Type *or* str *or* Dict (*Optional*)  
+    One or more sets of Configuration Options associated with corresponding Class
+    Dependencies, passed to `dynconfig` as positional arguments. Each
+    Configuration Unit can be either a Configurator class, a string with a
+    dot-notation path to a Configurator class, or a configuration dictionary. The
+    syntax for the path in dot-notation is described in the
+    [importclass](../misc_utilities#importclass) utility documentation.<br/><br/>
+
+- **Local Base Settings**: Keyword Arguments (*Optional*)  
+    Described in the [Global and Local
+    Configuration](#global-and-local-configuration) section.<br/><br/>
+
+The `dynconfig` decorator does not have any required arguments, meaning it can
+also be called with no arguments. This feature is valuable when using `dynconfig`
+as a method decorator to inject specific components into the decorated method.
+
+``` py
+@dynconfig()
+class Base:
+    ...
+
+    @dynconfig({<configuration_dict_1>})
+    def injection_method_1(...):
+        ...
+
+    @dynconfig({<configuration_dict_2>})
+    def injection_method_2(...):
+        ...
+
+    ...
+```
+
+**Arguments of dynconfig Method Decorator:**
+
+- **Configuration Dictionary**: Dict  
+    A configuration dictionary to configure the Class Dependencies for the
+    decorated method. <br/><br/>
+
 
 ### Using a Configurator Class
 
-Configurator classes can be associated with Base classes using the `dynconfig`
-class decorator. The Configurator class can be provided as `dynconfig` parameter
-either directly or in the form of a string with a dot-notation path to the
-Configurator class, as described in the
-[importclass](../misc_utilities#importclass) utility documentation.
+As mentioned previously, a Configurator class can be associated with a Base class
+using the `dynconfig` class decorator.
 
 ``` py
-@dynconfig(ConfiguratorClass | 'path.to.ConfiguratorClass')
-class BaseClass:
+@dynconfig(ConfiguratorClass)
+class Base:
     ...
 ```
 
@@ -108,6 +169,7 @@ Below is the complete syntax for the Configurator classes.
 
 ``` py
 class ConfiguratorClass:
+    # Class Dependency Configuration
     bool_option1 = ClassConfig(...)
     bool_option2 = (
         ClassConfig(...),
@@ -120,7 +182,6 @@ class ConfiguratorClass:
         lambda opt1, opt2, ...: <condition-on-opts>,
         ClassConfig(...)
     )
-
     def method_with_condition(self, opt1, opt2, ...):
         return <condition-on-opts>
 
@@ -135,38 +196,40 @@ class ConfiguratorClass:
     }
     ...
 
-    GLOBAL_DYNCONFIG = GlobalClassConfig(
-        # Unscoped Configuration
+    # Local Unit Configuration
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(
+        # Unscoped Settings
         build_recursively = True | False
         class_builder_base_dir = 'path.to.BaseDir'
         option_order = (option1, option2, ...)
-
-        # Dependency Configuration
+        # Dependency Settings
         default_class = DefaultClass | 'path.to.DefaultClass'
+        force_add = True | False
         component_attr = 'component_attribure'
         injection_method = 'injection_method'
         add_components_after_method = True | False
         strict_missing_args = True | False
+        structured_component_type = list | dict | ...
     )
 ```
-The Configurator is made up of two parts: the Class Dependency configuration and
-the Global Configuration.
+The Configurator is made up of two parts: the Class Dependency Configuration and
+the Local Unit Configuration.
 
-The Class Dependency configuration associates all potential Class Dependencies
-that can be integrated into the Base class with their respective Building Options.
-To this end, each potential Building Option is associated with a `ClassConfig`
-instance or with a tuple of `ClassConfig` instances, where the `ClassConfig`
-instance serves as a foundational configuration unit that allows the addition of
-either a Parent or a Component Dependency.
+The Class Dependency Configuration associates all potential Class Dependencies
+that can be integrated into the Base class with their respective Configuration
+Options. To this end, each potential Configuration Option is associated with a
+`ClassConfig` instance or with a tuple of `ClassConfig` instances, where the
+`ClassConfig` instance serves as a foundational configuration element that allows
+the addition of either a Parent or a Component Dependency.
 
-Building Options can be of different types:
+Configuration Options can be of different types:
 
-- **Boolean Option** that enables the addition of Class Dependencies based on a
-  boolean value,
-- **Conditional Option** that specifies a condition that must be met in order for
+- **Boolean Options** that enable the addition of Class Dependencies based on the
+  values of Building Options interpreted as boolean,
+- **Conditional Options** that specify conditions that must be met in order for
   the Class Dependencies to be added, and
-- **Switch Option** that allows the addition of Class Dependencies based on the
-  selection of one option from a range of options.
+- **Switch Options** that allow the addition of Class Dependencies based on the
+  selection of single options from a range of options.
 
 NOTE: *In Configurator classes, configurations with Conditional Options are set up
 via `dynconfig.set_configuration`, which can be also employed to programmatically
@@ -174,89 +237,104 @@ set configurations of any type. Conditional Options can be provided through the
 first argument of `set_configuration` in the form of any callable object,
 including lambdas and methods*.
 
-The [Global Configuration](#global-configuration), defined through a
-`GlobalClassConfig` instance assigned to the `GLOBAL_DYNCONFIG` attribute,
-establishes Global Settings that are applied when building the classes.
+The Local Unit Configuration, defined through a `LocalClassConfig` instance
+assigned to the `DYNDESIGN_LOCAL_CONFIG` attribute, establishes Local Settings
+that are applied when building the classes defined within that Configurator, as
+described in the [Global and Local Configuration](#global-and-local-configuration)
+section.
 
 ### ClassConfig Syntax for Parent Dependencies
 
-For the Parent Dependency configuration, `ClassConfig` has the following syntax:
+For the Parent Dependency Configuration, `ClassConfig` has the following syntax:
 
 ``` py
 ClassConfig(
-    inherit_from = ParentClass | 'path.to.Parent' | (Parent1, Parent2, ...),
+    inherit_from = ParentClass | 'path.to.Parent' | (Parent1, Parent2, ...)
     default_class = DefaultParentClass | 'path.to.DefaultParentClass'
 )
 ```
 
-**Arguments for Parent Dependencies:**
+**Arguments for Parent Dependency Configuration:**
 
 - **inherit_from**: Type, str *or* Tuple[Type *or* str]  
-    The class(es) that the Base class will inherit from if the corresponding Option
-    is selected.<br/><br/>
+    The class(es) that the Base class will inherit from if the corresponding
+    Building Option is selected.<br/><br/>
 
 - **default_class**: Type *or* str (*Optional*)  
-    The class that the Base class will inherit from if the corresponding Option
-    is NOT selected.<br/>
+    The class that the Base class will inherit from if the corresponding Building
+    Option is **not selected**.<br/>
 
-Each dependent class can be provided either directly or as a string with a
-dot-notation path to the class, as described in
-[importclass](../misc_utilities#importclass).
+NOTE: *Either parent or component classes can be provided either directly or as
+strings with a dot-notation path to the classes, as described in
+[importclass](../misc_utilities#importclass).*
 
 ### ClassConfig Syntax for Component Dependencies
 
-The syntax for the Component Dependency configuration is as following:
+The syntax for the Component Dependency Configuration is as following:
 
 ``` py
 ClassConfig(
-    component_class = ComponentClass | 'path.to.ComponentClass',
+    component_class = ComponentClass | 'path.to.ComponentClass'
     component_attr = 'component_attribure'
     default_class = DefaultComponentClass | 'path.to.DefaultComponentClass'
+    force_add = True | False
     add_components_after_method = True | False
     injection_method = 'injection_method'
+    init_args_from_option = True | False
     init_args_keep_first = 0 | 1 | 2 | ...
     init_args_from_self = 'attr' | ('attr1', 'attr2', ...)
     init_kwargs_from_self = {'key1': 'attr1', 'key2': 'attr2', ...}
     strict_missing_args = True | False
+    structured_component_type = list | dict | ...
+    structured_component_key = 'component_key'
 )
 ```
 
-**Arguments for Component Dependencies:**
+**Arguments for Component Dependency Configuration:**
 
 - **component_class**: Type *or* str  
-    The class to be instantiated as component and injected into the Base class
-    if the corresponding Option is selected.<br/><br/>
+    The class to be instantiated as component and injected into the built class
+    if the corresponding Building Option is selected.<br/><br/>
 
 - **component_attr**: str (*Optional*)  
-    The class/instance attribute to be initialized with the component class.
+    The class or instance attribute to be initialized with the component class.
 
-    NOTE: *`component_attr` must be provided in any case through at least one of
-    the four ways outlined in the [Global Configuration](#global-configuration)
-    section.*<br/><br/>
+    NOTE: *`component_attr` must be provided in any case within at least one of
+    the four settings' scopes outlined in the [Global and Local
+    Configuration](#global-and-local-configuration) section.*<br/><br/>
 
 - **default_class**: Type *or* str (*Optional*)  
-    The class to be instantiated as component and injected into the Base class
-    if the corresponding Option is NOT selected.<br/><br/>
+    The class to be instantiated as component and injected into the built class
+    if the corresponding Building Option is **not selected**.<br/><br/>
+
+- **force_add**: bool (*Optional*)  
+    When this flag is set, the related component is always added to the built
+    class regardless of the value of the associated Building Option. <br/><br/>
 
 - **add_components_after_method**: bool (*Optional*)  
     Whether to add the component before or after the execution of the injection
-    method. The default value is **False**, which means that the component will be
-    injected before executing the injection method. <br/><br/>
+    method. The default value is False, which means that the component are
+    injected by default **before** executing the injection method. <br/><br/>
 
 - **injection_method**: str (*Optional*)  
     The method into which the component is to be injected. By default, components
-    are injected in the constructor **\_\_init\_\_**. <br/><br/>
+    are injected into the constructor **\_\_init\_\_**. <br/><br/>
 
 - **init_args_keep_first**: int (*Optional*)  
     By default, arguments to be passed to the component constructor are adapted
-    from the arguments of the injection method, as described in the [Argument
-    Adaptation](#argument-adaptation) section. If certain or all of the positional
-    arguments from the injection method need to be excluded from those passed to
-    the constructor of the component, this parameter can be utilized to specify
-    how many positional parameters passed to the injection method are to be
-    retained. If no positional parameter of the injection method is needed to
+    from the arguments passed to the injection method, as described in the
+    [Argument Adaptation](#argument-adaptation) section. If certain or all of the
+    positional arguments from the injection method need to be excluded from those
+    passed to the constructor of the component, this parameter can be utilized to
+    specify how many positional parameters passed to the injection method are to
+    be retained. If no positional parameter of the injection method is needed to
     initialize the component, `init_args_keep_first` must be set to zero.
     <br/><br/>
+
+- **init_args_from_option**: bool (*Optional*)  
+    If this flag is set, the value of the related Building Option is passed as
+    first positional argument when initializing the component's constructor,
+    before any positional arguments from the injection method. <br/><br/>
 
 - **init_args_from_self**: str *or* Tuple[str] (*Optional*)  
     In addition to the arguments adapted from the ones of the injection method,
@@ -280,13 +358,26 @@ ClassConfig(
     will simply not be initialized, and the execution will continue normally.
     <br/><br/>
 
+- **structured_component_type**: Type (*Optional*)  
+    To aggregate components in a data structure assigned to a class or instance
+    attribute, the data type can be specified using this parameter, as described
+    in the [Injecting Components in Data
+    Structures](#injecting-components-in-data-structures) section. <br/><br/>
+
+- **structured_component_key**: str (*Optional*)  
+    If the data type specified in `structured_component_type` is a dictionary type
+    or requires an assignment key in any way, that key can be defined using this
+    parameter. <br/><br/>
+
 ### Configuration Passed as dynconfig Arguments
 
-In alternative to using a Configurator class, the configuration settings can be
-directly passed to `dynconfig` as following.
+In alternative to using a Configurator class, the pairs of Configuration Options
+and Class Dependencies can be directly passed to `dynconfig` within a
+configuration dictionary.
 
 ``` py
 @dynconfig(
+    # Class Dependency Configuration
     {
         'bool_option1': ClassConfig(...),
         'bool_option2': ClassConfig(...),
@@ -307,97 +398,75 @@ directly passed to `dynconfig` as following.
             dynconfig.SWITCH_DEFAULT: ClassConfig(...)
         },
         ...
+
+        # Local Unit Configuration
+        "DYNDESIGN_LOCAL_CONFIG": LocalClassConfig(...)
     },
-    build_recursively = True | False
-    class_builder_base_dir = 'path.to.BaseDir'
-    option_order = (switch_selector1, bool_option2, ...)
-    default_class = DefaultClass | 'path.to.DefaultClass'
-    component_attr = 'component_attribure'
-    injection_method = 'injection_method'
-    add_components_after_method = True | False
-    strict_missing_args = True | False
+
+    # Local Base Configuration
+    local_base_setting1 = value1,
+    local_base_setting2 = value2,
+    ...
 )
 class Base:
-    pass
+    ...
 ```
 
-The syntax closely resembles that of the Class configuration, with one notable
-distinction: Options are configured using a **dictionary** provided as the first
-positional argument to the `dynconfig` decorator. In this scenario, conditions can
-be directly defined as dictionary keys in the form of lambda functions or any
-other callable object, eliminating the need for `dynconfig.set_configuration`.
+The syntax closely resembles that of the Configurators with one notable
+distinction: conditions can be directly defined as dictionary keys in the form of
+lambda functions or any other callable object, eliminating the need for
+`dynconfig.set_configuration`.
 
-With this syntax, the Global Settings (described in the [Global
-Configuration](#global-configuration) section) are passed as keyword arguments to
-the `dynconfig` decorator.
+## Global and Local Configuration
 
-### dynconfig as Method Decorator
+The configuration settings can be specified within four different scopes:
 
-If a component must be configured to be potentially injected into a particular
-method, an alternative approach is to use `dynconfig` as a decorator for that
-method. Clearly, this syntax only applies to Component Dependencies.
+- **Global**: Global Settings can be defined using `dynconfig.set_global`, and
+  these settings will be applied to all classes configured using dynconfig after
+  their definition.
+- **Local to a Base class**: If a setting is passed as a keyword argument of
+  `dynconfig` class decorator, it will only apply to the Base class that is being
+  configured.
+- **Local to a Configuration Unit**: If a setting is defined through the
+  `DYNDESIGN_LOCAL_CONFIG` attribute of a Configurator class (or, equivalently,
+  through the "DYNDESIGN_LOCAL_CONFIG" key of a configuration dictionary) that
+  setting will only apply to the Class Dependencies of that Configurator (or
+  dictionary).
+- **Local to a ClassConfig instance**: If a setting is defined as a field of a
+  `ClassConfig` instance, the setting will only apply to the Class Dependency that
+  is added using that `ClassConfig` object.
+
+Here is an example of how Global settings work:
 
 ``` py
 @dynconfig(...)
-class Base:
-    pass
+class NotAffectedClass:
+    ...
 
-    @dynconfig({
-        "option1": ClassConfig(...),
-        "option2": ClassConfig(...),
-        ...
-        lambda opt1, opt2, ...: <condition-on-opts>:
-            ClassConfig(c...),
-        ...
-        'switch_selector': {
-            'switch_option1': ClassConfig(...),
-            'switch_option2': ClassConfig(...),
-            ...
-            dynconfig.SWITCH_DEFAULT: ClassConfig(...)
-        },
-        ...
-    })
-    def method_in_which_to_inject(self, ...):
-        ...
-```
-
-In the above syntax, all the `ClassConfig` instances do not require specifying an
-`injection_method` setting, as the injection method is set to
-"method_in_which_to_inject" by default.
-
-## Global Configuration
-
-The Global Configuration Settings can fall into two categories: Unscoped
-Configuration settings, which encompass configurations that globally affect the
-way a class is constructed, and Dependency Configuration settings, which include
-configurations that specifically govern the addition of Class Dependencies.
-
-There are four ways to configure each Global Setting:
-
-- **Globally**: This means that the setting will be applied to all classes that
-  are configured using dynconfig from the point where the setting is set using
-  `dynconfig.set_global`. For example
-``` py
 dynconfig.set_global(build_recursively=False, add_components_after_method=True)
+
+@dynconfig(...)
+class AffectedClass:
+    ...
 ```
-- **Through the `GLOBAL_DYNCONFIG` attribute of a Configurator**: This means that
-  the setting will only apply to the settings defined in the Configurator class.
-- **As a keyword argument of `dynconfig`**: This means that the setting will only
-  apply to the class that is being configured.
-- **As a field of `ClassConfig`**: This means that the setting will only apply to
-  the Class Dependency that is added using that `ClassConfig` object. It is
-  important to note that only Dependency Configuration settings can be configured
-  using this method.
 
-### Unscoped Configuration
+The Global and Local Configuration Settings can fall into two categories:
+**Unscoped settings**, which encompass configurations that affect the way a class
+is built, and **Dependency settings**, which include configurations that
+specifically govern the addition of Class Dependencies.
 
-The following Unscoped Global Settings affect the global behavior of Class Builder.
+NOTE: *Settings that are scoped to a `ClassConfig` instance can only be of the
+Dependency Configuration category.*
+
+### Unscoped Settings
+
+The following Unscoped settings affect the general behavior of Class Builder.
 
 - **build_recursively**: bool  
     Whether the classes dependent to the Base class have to be built recursively
-    or not. When set to **True** (the Default setting), both the statically
-    defined Class Dependencies and those added dynamically are built recursively
-    in accordance with the table below.
+    or not. When set to **True** (the Default setting), both statically defined
+    Class Dependencies and those added dynamically are built recursively in
+    accordance with the table below.
 
     |                       | Parent Dependencies |      Component Dependencies       |
     |-----------------------|:-------------------:|:---------------------------------:|
@@ -405,27 +474,31 @@ The following Unscoped Global Settings affect the global behavior of Class Build
     | **Added Dynamically** |    Automatically    |           Automatically           |
 
     If a dependency added dynamically by Class Builder is also dynamically
-    configurable, it will be automatically configured with the same Options as
-    the Base class. This also applies to static parent classes of base classes.
-    However, if a static component class requires to be recursively built, it
-    needs to be explicitly instantiated using `buildcomponent`, as explained in
-    details in [this section](#building-of-static-component-dependencies).<br/><br/>
+    configurable (i.e., it is decorated with `@dynconfig`), it will be
+    automatically built with the same Building Options as the Base class. This
+    rule also applies to static parent classes of base classes. However, if a
+    **static component** class requires to be recursively built, it needs to be
+    explicitly instantiated using `buildcomponent`, as explained in details in the
+    [Building of Static Component
+    Dependencies](#building-of-static-component-dependencies) section.<br/><br/>
 
 - **class_builder_base_dir**: str  
-    The base directory from which the Configurator and Dependent Classes in dot
-    notation are dynamically imported. <br/><br/>
+    The base directory from which the Configurator classes and dependent classes
+    in dot notation are dynamically imported. <br/><br/>
 
 - **option_order**: Type *or* str  
     The order in which the Building Options must be assessed for applying the
     corresponding `ConfigClass` instances. If multiple Options are enabled, this
     setting could impact the Method Resolution Order (MRO) of dynamically
     inherited classes or the instantiation of components within class/instance
-    attributes.<br/>
+    attributes, as shown in the [Customizing MRO](#customizing-mro) section.<br/>
 
-### Dependency Configuration
+### Dependency Settings
 
-Described in details in the [ClassConfig
-Syntax](#classconfig-syntax-for-parent-dependencies) section.
+Described in details in the [ClassConfig Syntax for Parent
+Dependencies](#classconfig-syntax-for-parent-dependencies) and [ClassConfig Syntax
+for Component Dependencies](#classconfig-syntax-for-component-dependencies)
+sections.
 
 ## Basic Examples
 
@@ -445,6 +518,7 @@ class A:
 
 class Configurator:
     optionA = ClassConfig(component_class=A, component_attr="comp")
+
 
 @dynconfig(Configurator)
 class Base:
@@ -510,15 +584,15 @@ The following scenarios occur:
   as shown in the [Customizing MRO](#customizing-mro) section.
 
 NOTE: *The bodies of component classes such as "A", "B", "C", ..., and Default,
-along with those of parent classes P1, P2, ..., and PDefault, will be assumed to
+along with those of parent classes P1, P2, ..., and "PDefault", will be assumed to
 have the same form as in the previous examples and will therefore be omitted from
 the following code snippets unless otherwise specified. Import statements of
-`buildclass`, `dynconfig`, `ClassConfig`, and `GlobalClassConfig` will be implied
+`buildclass`, `dynconfig`, `ClassConfig`, and `LocalClassConfig` will be implied
 as well.*
 
 ## Switches
 
-Switches are a powerful construct for managing Options that have values other than
+Switch is a powerful construct for managing Options that take on values other than
 True or False.
 
 ``` py
@@ -528,7 +602,7 @@ class Configurator:
         "optionB": ClassConfig(component_class=B),
         dynconfig.SWITCH_DEFAULT: ClassConfig(component_class=Default)
     }
-    GLOBAL_DYNCONFIG = GlobalClassConfig(component_attr="comp")
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(component_attr="comp")
 
 
 @dynconfig(Configurator)
@@ -547,16 +621,15 @@ buildclass(Base)()
 # I am component `Default`
 ```
 In the code above, if the "switch" parameter is set to either "optionA" or
-"optionB", the corresponding component classes are injected into the
-"self.comp" attribute. Otherwise, the Default class, set up through the
+"optionB" the corresponding component classes are injected in the "self.comp"
+attribute. Otherwise, the Default class, set up through the
 `dynconfig.SWITCH_DEFAULT` fixed key, is injected by default.
 
-The code also shows how to use the `GLOBAL_DYNCONFIG` fixed attribute. This
-attribute can be used to set Dependency Configuration settings that are applied to
-all `ClassConfig` instances. In this case, the "comp" setting is globally assigned
-to `component_attr`: this means that all `ClassConfig` instances use "comp" as
-attribute to instantiate the components, unless it is overridden in a specific
-`ClassConfig` instance.
+The code also shows how to set a Local Unit Configuration setting through the
+`DYNDESIGN_LOCAL_CONFIG` fixed attribute. In this case, the "comp" setting is
+locally assigned to `component_attr`: this means that all `ClassConfig` instances
+of Configurator will use "comp" as attribute to instantiate the components, unless
+it is overridden in a specific `ClassConfig` instance.
 
 ## Multiple Dependencies per Option
 
@@ -576,7 +649,7 @@ class Configurator:
     }
     bool_option = ClassConfig(component_class=D)
 
-    GLOBAL_DYNCONFIG = GlobalClassConfig(component_attr="comp")
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(component_attr="comp")
 
 
 @dynconfig(Configurator)
@@ -604,10 +677,12 @@ buildclass(Base)()
 To elaborate, the Configurator has been altered to make "optionB" result in the
 composition of two classes, namely "B" and "C", instead of just the "B" class as
 seen in the previous example. Furthermore, an additional Boolean Option,
-"bool_option", has been introduced to illustrate the handling of Building Options
-with varying types. Components "A", "B", "D", and Default are instantiated by
-default in the "comp" attribute, thanks to the Global Setting
-`component_attr="comp"`, while "C" is instantiated in "comp2".
+"bool_option", has been introduced to illustrate the handling of Configuration
+Options with varying types. In other words, components "A", "B", "D", and Default
+are instantiated by default in the "comp" attribute, thanks to the Unit Local
+Setting `component_attr="comp"`, while "C" is instantiated in "comp2", since the
+`component_attr` Local setting of the corresponding `ClassConfig` overrides the
+Unit Local Setting.
 
 As results:
 
@@ -619,15 +694,71 @@ As results:
 - When a class is built with no Option, the Default class is instantiated in
   "comp".
 
+## Multiple Configuration Units
+
+In some cases, splitting Class Dependencies into separate Configuration Units can
+be useful. For example, this could be done to use different Local Configuration
+Settings for each Unit, or to modularize the Units so that they can be reused when
+building further classes.
+
+To support this capability, starting from DynDesign version 1.1, the `dynconfig`
+class decorator accepts multiple Configuration Units as positional arguments.
+
+``` py
+class Configurator1:
+    switch_a_b = {
+        "optionA": ClassConfig(component_class=A),
+        "optionB": ClassConfig(component_class=B),
+        dynconfig.SWITCH_DEFAULT: ClassConfig(component_class=DefaultAB)
+    }
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(component_attr="comp")
+
+
+class Configurator2:
+    switch_c_d = {
+        "optionC": ClassConfig(component_class=C),
+        "optionD": ClassConfig(component_class=D),
+        dynconfig.SWITCH_DEFAULT: ClassConfig(component_class=DefaultCD)
+    }
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(component_attr="comp2")
+
+
+@dynconfig(Configurator1, Configurator2)
+class Base:
+    def __init__(self):
+        self.comp.whoami()
+        self.comp2.whoami()
+
+
+buildclass(Base, switch_a_b="optionA")()
+# I am component `A`
+# I am component `DefaultCD`
+
+buildclass(Base, switch_a_b="optionB", switch_c_d="optionD")()
+# I am component `B`
+# I am component `D`
+```
+
+In the above code, the two switches "switch_a_b" and "switch_c_d" have two
+different component attributes. Instead of repeating the `component_attr`
+assignment in each individual `ClassConfig` instance, it appears only once per
+Configuration Unit. The Base class is subsequently associated with both
+Configuration Units.
+
+The ability to use multiple Configuration Units is especially useful when
+[Injecting Components in Data
+Structures](#injecting-components-in-data-structures).
+
 ## Conditional Options
 
 To allow for enhanced flexibility, conditional functions are also permitted as
-Building Options.
+Configuration Options.
 
-### Boolean Functions of other Building Options
+### Functions Using Other Configuration Options
 
-In the code snippet below, a lambda function is employed as a Building Option from
-a dictionary provided as the first argument to the `dynconfig` class decorator.
+In the code snippet below, a lambda function is employed as a Configuration Option
+from a dictionary provided as the first argument to the `dynconfig` class
+decorator.
 
 ``` py
 @dynconfig({
@@ -649,8 +780,8 @@ The lambda function checks if the "optionA" Option is set to True and "optionB" 
 set to False or not set. If both of these conditions are met, the "A" component is
 added as a dependency.
 
-NOTE: *The arguments' names in the conditional functions must match the names of
-the Building Options used in `buildclass`.*
+NOTE: *The arguments' names in the conditional function signatures must match the
+names of the Building Options passed to `buildclass`.*
 
 ### Functions Using Class Parameters
 
@@ -699,7 +830,7 @@ NOTES:
 - *Any class and instance attribute of the Base class (such as THRESHOLD) can be
   provided as well to the conditional function using the name matching rule with
   the Base attributes.*
-- *When using class configurators, the Conditional Options must be defined using
+- *When using class Configurators, the Conditional Options must be defined using
   `dynconfig.set_configuration`.*
 
 ## Safe Communication with Dependent Classes
@@ -729,10 +860,10 @@ Base()
 ### Safely Initializing Specific Parent Classes
 
 It is possible to modify the example in the [Parent Classes](#parent-classes)
-section so that both the constructors of the parent classes are called when both
-the Options "optionA" and "optionB" are set to True. To achieve this, both
-dynamically added superclasses need to be accessed from within the Base's
-constructor when both Options are True.
+section so that both constructors of the parent classes are called when both
+Options "optionA" and "optionB" are set to True. To achieve this, both dynamically
+added superclasses need to be accessed from within the Base's constructor when
+both Options are True.
 
 ``` py
 from dyndesign import ..., safesuper
@@ -770,10 +901,10 @@ Base()
 ```
 
 To invoke the constructor of the second parent class (P2) when both Options are
-True, it is necessary to employ the `super` function with parameters, with the
-initial parameter being the first parent class (P1). However, employing
-`super(P1, self)` directly would lead to a `TypeError` whenever the class is built
-without P1. To seamlessly bypass the error, the [safesuper
+True, it is necessary to pass the first parent class (P1) as initial parameter of
+the `super` function. However, employing `super(P1, self)` directly would lead to
+a `TypeError` whenever the class is built without P1. To seamlessly bypass the
+error, the [safesuper
 function](../extended_class_communication#safesuper-function) is utilized instead.
 
 It is worth noting that the above implementation raises no exception even if the
@@ -785,7 +916,7 @@ Class Builder's capabilities shine when combined with the
 [decoratewith](../extended_class_communication#decoratewith) meta decorator.
 Through this combined usage, both dynamically added Parent and Component
 Dependencies can be seamlessly utilized to decorate methods of the base classes.
-Even if any or all of the parent or component classes are not added (yet), the
+Even if any or all of the parent or component classes are not (yet) added, the
 execution continues without errors.
 
 ``` py
@@ -880,9 +1011,8 @@ BuiltClass()
 
 ### Custom Injection Methods
 
-By default, the components are injected before the `__init__` constructor is
-called. To inject the components in a different method, the `injection_method`
-setting can be used.
+By default, components are injected into the `__init__` constructor. To inject the
+components into a different method, the `injection_method` setting can be used.
 
 ``` py
 class Configurator:
@@ -909,10 +1039,11 @@ BuiltClass().injection_method()
 As confirmed by the `assert` statement in `__init__`, component "A" has not been
 instantiated yet in "comp" when the constructor of the Base class is executed.
 
-### Using dynconfig as Method Decorator to Configure Components
+### Using dynconfig as Method Decorator
 
 For convenience, `dynconfig` can be directly used as a method decorator to
-configure component injection into specific methods, including `__init__`.
+configure component injection into specific methods, without having to set
+`injection_method`.
 
 ``` py
 @dynconfig()
@@ -937,9 +1068,9 @@ built_class.injection_method()
 
 ### Custom Injection Position
 
-By default, components are injected **before** the method is called. This behavior
-can be changed to inject the components **after** or in the **middle** of the
-method.
+By default, components are injected **before** the method is executed. This
+behavior can be changed to inject the components **after** or in the **middle** of
+the method's execution.
 
 ``` py
 @dynconfig()
@@ -977,22 +1108,45 @@ built_class.injection_method()
 
 In the example provided, the "A" component is injected after executing the
 constructor `__init__`, while the "B" component is injected within the execution
-of "injection_method".
+of "injection_method" through the `dynconfig.inject_components` fixed method.
 
-NOTE: *To inject components at a specific point of a method's execution, the
-`dynconfig.inject_components` fixed method must be used*.
+### Passing the Option Value as Argument
+
+The value of the Building Option used to select a certain component can also be
+passed to the component constructor as the first positional argument, by setting
+the `init_args_from_option` flag. This is especially useful when the option has a
+non-boolean value that needs to be used to initialize the component.
+
+``` py
+class A:
+    def __init__(self, param1, param2):
+        print(f"Component `A` prints {param1=} and {param2=}")
+
+
+@dynconfig({"optionA": ClassConfig(
+    component_attr="comp",
+    component_class=A,
+    init_args_from_option=True
+)})
+class Base:
+    pass
+
+
+BuiltClass = buildclass(Base, optionA="VALUE #1")
+built_class = BuiltClass("VALUE #2")
+# Component `A` prints param1='VALUE #1' and param2='VALUE #2'
+```
 
 ### Argument Adaptation
 
-To initialize a component, specific arguments may be required. By default, the
-arguments passed to the injection method are **adapted** to match the parameters
-of the component constructor, in a manner similar to that described for
+To initialize a component, specific arguments from those passed to the injection
+method may be required. By default, these arguments are **adapted** to match the
+parameters of the component constructor, in a manner similar to that described for
 [mergeclass constructors](../dynamic_class_design#constructors).
 
-Specifically, any excessive positional arguments from the signature of the
-injection method are filtered out before being forwarded to the component
-constructor, and non-positional arguments are passed to the component constructor
-by matching their names.
+Specifically, any excessive positional arguments passed are filtered out before
+being forwarded to the component constructor, and non-positional arguments are
+passed to the component constructor by matching their names.
 
 ``` py
 class A:
@@ -1026,9 +1180,10 @@ built_class = BuiltClass('x', 'y', kw1='z', kw2='w')
 In the above example:
 
 - the first positional argument "a" of `__init__` is passed to the constructor of
-  component "A" and is filtered out when component "B" is initialized;
+  component "A" and is filtered out when component "B" is initialized, since it is
+  required only by "A";
 - the second positional argument "b" of `__init__` is filtered out when
-  initializing both components "A" and "B";
+  initializing both components "A" and "B", since neither "A" nor "B" require it;
 - the keyword argument "kw1" is used to initialize "A", based on the name
   matching; and
 - the keyword argument "kw2" is used to initialize "B".
@@ -1056,6 +1211,9 @@ built_class = BuiltClass('x', 'y', kw1='z', kw2='w')
 # Initializing `Base` with no arguments
 ```
 
+In this example, both components are initialized exactly as in the previous code,
+but `__init__` does not receive any positional or keyword arguments.
+
 ### Altering Behavior with Missing Required Arguments
 
 As previously mentioned, excessive positional arguments are filtered out before
@@ -1065,11 +1223,6 @@ component constructors lack the required positional arguments? By default, a
 
 ``` py
 ...
-
-@dynconfig(Configurator)
-class Base:
-    pass
-
 
 BuiltClass = buildclass(Base, optionA=True)
 built_class = BuiltClass(kw2='w')
@@ -1097,17 +1250,12 @@ built_class = BuiltClass(kw2='w')
 
 In the code above, the "A" component class cannot be instantiated because the
 first positional argument of its constructor is missing. However, this does not
-raise an exception, and the execution proceeds to add the "B" component.
-
-NOTE: *The example above also shows a hybrid way to configure the Global Settings.
-Instead of defining them using the `GLOBAL_DYNCONFIG` variable in the Configurator
-class, they can be passed directly as keyword arguments to the `dynconfig`
-function, in the same way as when passing the configuration settings explicitly.*
+raise any exception and the execution proceeds to add the "B" component.
 
 ### Component Initialization Parameters
 
-The arguments that are passed to component constructors can be customized to
-achieve any desired result. This can be accomplished through two distinct
+The arguments that are passed to component constructors can be customized with a
+high degree of flexibility. This can be accomplished through two distinct
 approaches:
 
 1. By partially or entirely replacing the arguments passed to the injection method
@@ -1154,11 +1302,12 @@ built_class.injection_method("x.re-passed")
 ```
 
 The "A" component is instantiated twice: the first time after the `__init__`
-constructor is called (as "option1" is True), and the second time in the middle of
-the "injection_method" method (given that "option2" is True).
+constructor is executed (since "option1" is True), and the second time in the
+middle of the "injection_method" method's execution (given that "option2" is
+True).
 
-On the first instantiation, the following argument modifications take place within
-the `__init__` method:
+On the first instantiation, the arguments forwarded to the constructor of "A" are
+modified as following:
 
 - Initially, the first positional argument ("x.passed") is retained, while the
   second ("y.passed") is discarded because `init_args_keep_first` is set to 1.
@@ -1174,6 +1323,92 @@ passed to the constructor of "A" by `dynconfig.inject_components`. In the exampl
 the first positional argument "a" is taken from the one provided to the method,
 the second argument is obtained from `self.self_b`, and the value of the keyword
 argument "kw" is hardcoded.
+
+### Injecting Components in Data Structures
+
+Since DynDesign version 1.1, components can be injected into any type of data
+structure that supports adding items, including lists, dictionaries,
+SimpleNamespaces, and user-defined classes.
+
+``` py
+class Configurator:
+    option1 = ClassConfig(component_class=A)
+    option2 = ClassConfig(component_class=B)
+
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(
+        component_attr="comp_list",
+        structured_component_type=list
+    )
+
+@dynconfig(Configurator)
+class Base:
+    def __init__(self):
+        for comp in self.comp_list:
+            comp.whoami()
+
+
+BuiltClass = buildclass(Base, option1=True)
+BuiltClass()
+# I am component `A`
+
+BuiltClass = buildclass(Base, option1=True, option2=True)
+BuiltClass()
+# I am component `A`
+# I am component `B`
+```
+
+The above code shows that assigning `structured_component_type` to `list` is
+enough to achieve the following behavior:
+
+- When only "option1" is selected, a list containing a single element (the
+  instance of the corresponding component "A") is injected in `comp_list`.
+- When "option2" is selected as well, the "B" component is appended to `comp_list`
+  alongside "A".
+
+The next example modifies the code above to use two Configurators with the same
+Base class: "Configurator2" is similar to Configurator, but it uses a dictionary
+instead of a list as data structure.
+
+``` py
+...
+
+class Configurator2:
+    option1 = ClassConfig(component_class=C, structured_component_key="c")
+    option2 = ClassConfig(component_class=D, structured_component_key="d")
+
+    DYNDESIGN_LOCAL_CONFIG = LocalClassConfig(
+        component_attr="comp_dict",
+        structured_component_type=dict
+    )
+
+@dynconfig(Configurator, Configurator2)
+class Base:
+    def __init__(self):
+        for ind, comp_list in enumerate(self.comp_list):
+            print(f"List {ind=}   - ", end="")
+            comp_list.whoami()
+        for key, comp_dict in self.comp_dict.items():
+            print(f"Dict {key=} - ", end="")
+            comp_dict.whoami()
+
+
+BuiltClass = buildclass(Base, option1=True)
+BuiltClass()
+# List ind=0   - I am component `A`
+# Dict key='c' - I am component `C`
+
+BuiltClass = buildclass(Base, option1=True, option2=True)
+BuiltClass()
+# List ind=0   - I am component `A`
+# List ind=1   - I am component `B`
+# Dict key='c' - I am component `C`
+# Dict key='d' - I am component `D`
+```
+
+A significant distinction compared to the previous example is that dictionary
+component types (similarly to other dictionary-like types) enable, for each
+component to be injected, the specification of a unique key via the
+`structured_component_key` setting.
 
 ## Advanced Parent Configuration
 
@@ -1243,17 +1478,17 @@ classes configured using `@dynconfig` in a cascading manner**.
 
 As the default behavior, Class Dependencies are built recursively, utilizing the
 **same Building Options as the Base classes**. As shown in the table in the
-[Unscoped Configuration](#unscoped-configuration) section, the following Class
+[Unscoped Settings](#unscoped-settings) section, the following Class
 Dependency types are built recursively: Parent Dependencies (both static and
 dynamically added) and Component Dependencies (dynamically added).
 
-In this example, an entire 2-level hierarchy of Component and Parent Dependencies
-is added to the Base class when it is built with "optionA" set to True. The visual
-representation provided in the diagram below illustrates the hierarchical
-relationships among these classes. At the bottom, the Base class statically
-inherits from the Parent1 class (depicted as a solid line). When a new class is
-built with "optionA" set, the Class Dependencies (indicated by dashed lines) are
-recursively added as follows:
+In the example provided in this section, a 2-level hierarchy of Component and
+Parent Dependencies is added to the Base class when it is built with "optionA" set
+to True. The visual representation provided in the diagram below illustrates the
+hierarchical relationships among these classes. At the bottom, the Base class
+statically inherits from the Parent1 class (depicted as a solid line). When a new
+class is built with "optionA" set, the Class Dependencies (indicated by dashed
+lines) are recursively added as follows:
 
 - The Parent1 class inherits from the Grandparent1 class.
 - The Base class inherits from the Parent2 class.
@@ -1374,13 +1609,59 @@ The Base class's constructor statically instantiates the Component2 class as
 - When the "built_class" instance is built with "optionA" set to True, "comp2"
   does inherit the "method4" method of the ParentOfComponent2 class.
 
+### Building of Forced Dependencies
+
+Starting from DynDesign version 1.1, dependencies can be forced to be added
+regardless of the value of the corresponding building option, as an alternative to
+using `buildcomponent`. These dependencies retain their dynamic nature, undergoing
+recursive configuration. The effect is similar to using static composition, if the
+Base class does not need to be used directly (without being built).
+
+For instance, if Component2 in the above code is changed from static to dynamic,
+with `force_add` set to True, then the component will be recursively built.
+
+``` py
+...
+
+class Configurator:
+    optionA = (
+        ClassConfig(inherit_from=Parent2),
+        ClassConfig(component_class=Component1, component_attr="comp"),
+    )
+    optionForced = ClassConfig(
+        component_class=Component2,
+        component_attr="comp2",
+        force_add=True
+    )
+
+@dynconfig(Configurator)
+class Base(Parent1):
+    pass
+
+
+base = Base()
+assert not hasattr(base, 'comp2')
+
+built_class = buildclass(Base, optionA=True)()
+
+...
+
+built_class.comp2.method4()
+# I am `ParentOfComponent2.method4`
+```
+
+In contrast to the previous example, Component2 is not instantiated in `comp2`
+when the Base class is instantiated directly. However, the built class has
+Component2 recursively built, just like in the previous example.
+
 ### Disabling Recursion
 
 Recursion, which is enabled by default, can be turned off using the Unscoped
-Global Setting `build_recursively`. For instance, if `build_recursively` is
-disabled in the previous example, only the classes directly dependent from Base
-and the component classes instantiated using `dynconfig.buildcomponent` will be
-recursively built.
+Setting `build_recursively`. For instance, if `build_recursively` is disabled in
+the [Building of Static Component
+Dependencies](#building-of-static-component-dependencies) example, only the
+classes directly dependent from Base and the component classes instantiated using
+`buildcomponent` will be recursively built.
 
 ![Class Dependency Diagram](https://github.com/amarula/dyndesign/blob/7664a4456271ccac2f0e27a276a754c2d7f7ec98/docs/img/build_disable_recursion_example.png?raw=true)
 
@@ -1421,9 +1702,13 @@ The provided code shows that:
   recursively built. As a result, "method3" is not inherited by
   "built_class.comp".
 - The Component2 class is instantiated as the "comp2" object, and it is still
-  recursively built beacuse it is instantiated using the
+  recursively built because it is instantiated using the
   `dynconfig.buildcomponent` function. As a result, "method4" is inherited by
   "built_class.comp2".
+
+On the contrary, if `build_recursively` was disabled in the [Building of Forced
+Dependencies](#building-of-forced-dependencies) example, Component2 would not be
+built recursively, similar to how Component1 would also not be built.
 
 ## Integration with argparse
 
@@ -1439,7 +1724,7 @@ buildclass(Base, NameSpace(option1=value1, option2=value2))
 An especially notable format accepted by `buildclass` is the object returned by
 the `parse_args` method from the `argparse` package. This allows `buildclass` to
 be directly piped to a script argument parser, establishing a **standardized
-approach to craft scripts that use classes configured directly with the script
+approach to create scripts using classes configured directly with the script
 options**.
 
 Below is an example of Python script that accepts "-a" and "-b" as optional
@@ -1489,13 +1774,13 @@ End of script `classbuilder_argparse.py`
 
 ## Lazy Import of Dependency Modules
 
-As the number of Dependency Classes increases, the prospect of employing **lazy
+As the number of Class Dependencies increases, the prospect of employing **lazy
 import of the modules** for these optional classes becomes increasingly appealing.
 As explained in the [Syntax](#syntax) section, it is possible to provide both
-Configurators and Dynamic Class Dependencies by specifying them as paths to
-classes using dot notation.
+Configurator and dependent classes by specifying them as paths to the classes
+using the dot notation.
 
-In the example below optional Class Dependencies can be organized into specific
+In the example below potential dependent classes can be organized into specific
 directories and imported dynamically when needed.
 
 ```
@@ -1530,6 +1815,8 @@ class Parent1:
         print("I am the Constructor of `Parent1`")
 ```
 
+...
+
 ``` py
 # class_builder_config/lazy_import_config.py
 
@@ -1561,16 +1848,16 @@ class Base:
 
 
 built_class = buildclass(Base, optionA=True)()
-# I am the Constructor of `Parent`
+# I am the Constructor of `Parent1`
 
 built_class.comp.whoami()
-# I am component `Component`
+# I am component `Component1`
 ```
 
 **Advantages**: Class Dependencies are only imported when they are needed. This
 can help to improve performance and memory usage. In the provided example, only
 the Parent1 and Comp1 classes are imported because they are required by "optionA".
-Other Dependencies, such as Parent2, Parent3, and so forth, are not imported.
+Other dependent classes, such as Parent2, Parent3, and so forth, are not imported.
 
 **Disadvantages**: certain advanced code features provided by some IDEs
 (Integrated Development Environments), such as source code navigation, are not
@@ -1629,12 +1916,12 @@ This warning is resolved when the method is called using `safeinvoke`.
 Using Type Hinting for components that may or may not be dynamically added to the
 built classes can help to achieve two goals:
 
-1. **Avoid warnings from code analyzers:** By adding Type Hints to the attributes
-   of dynamically added components, the code analyzer can be informed of the
-   expected type of the attribute. This can help to avoid warnings about
+1. **To avoid warnings from code analyzers:** By adding Type Hints to the
+   attributes of dynamically added components, code analyzers can be informed of
+   the expected type of the attribute. This can help to avoid warnings about
    unexpected types.
-1. **Enable advanced code features:** By adding Type Hints to the attributes of
-   dynamically added components, certain advanced IDE features, such as source
+1. **To enable advanced code features:** By adding Type Hints for the attributes
+   of dynamically added components, certain advanced IDE features, such as source
    code navigation, can be enabled. This can make it easier to find and understand
    the code that employs Class Builder.
 
@@ -1666,8 +1953,8 @@ class Base:
         ...
 ```
 
-Another viable option is to utilize the generic `Type` Type Hint. Additionally, if
-it aligns with the intended class usage, the component can be declared as class
+Another viable option is to utilize the generic `Type` Type Hint. Alternatively,
+if it aligns with the intended class usage, the component can be declared as class
 attribute.
 
 ``` py
