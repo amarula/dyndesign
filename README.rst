@@ -55,7 +55,6 @@ Here is an overview of DynDesign's tools.
     b.method_of_parent()
     b.comp.method_of_component()
 
-|
 * Dynamically add parent classes to a class:
 
 .. code:: python
@@ -72,7 +71,6 @@ Here is an overview of DynDesign's tools.
     c = Child()
     c.method_of_parent1()
 
-|
 * Merge two or more classes:
 
 .. code:: python
@@ -89,7 +87,6 @@ Here is an overview of DynDesign's tools.
     m = MergedClass()
     m.method_of_Ext1()
 
-|
 * Decorate a method with one or more instance methods loaded at runtime:
 
 .. code:: python
@@ -100,7 +97,6 @@ Here is an overview of DynDesign's tools.
     def decorated_method(self, ...):
         ...
 
-|
 * Safely invoke functions or methods from a ``safezone`` context manager or by
   using the ``safeinvoke`` API:
 
@@ -117,7 +113,6 @@ Here is an overview of DynDesign's tools.
     def method(self):
         safeinvoke("method_possibly_non_existent", self)
 
-|
 * Create and destroy Singleton classes:
 
 .. code:: python
@@ -132,7 +127,6 @@ Here is an overview of DynDesign's tools.
     Singleton().destroy_singleton()
     new_singleton_instance = Singleton(...)
 
-|
 * Import classes dynamically using the path:
 
 .. code:: python
